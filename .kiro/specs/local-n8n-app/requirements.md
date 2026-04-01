@@ -30,6 +30,20 @@ This document defines the requirements for a local-only n8n desktop/web applicat
 - **Webhook**: An HTTP endpoint that triggers a Workflow when called
 - **Data_Table**: A structured data store within n8n for persistent row-based data
 
+## Technology Constraints
+
+The application uses the stack defined in `docs/TECH_STACK.md`:
+- **Desktop shell**: Tauri 2 (Rust backend, system webview) — solves CORS, filesystem access, and distribution
+- **Frontend**: Svelte 5 + SvelteKit with `@sveltejs/adapter-static` (compiled to static SPA)
+- **Canvas**: Svelte Flow (@xyflow/svelte) for node-based workflow editor
+- **Styling**: Tailwind CSS 4 with dark/light theme support
+- **Language**: TypeScript (strict mode)
+- **Build**: Vite (built into SvelteKit)
+- **Unit tests**: Vitest with mock API responses
+- **E2E/Visual tests**: Playwright with built-in screenshot comparison
+- **API proxy**: All n8n API calls go through Tauri's Rust HTTP plugin (no browser CORS issues)
+- **Filesystem**: Debug logs and file exports use Tauri's filesystem API
+
 ## Phase Classification
 
 Based on research into the n8n Community Edition (free self-hosted) vs Enterprise/Paid features, requirements are classified into two phases:
@@ -60,9 +74,18 @@ These features are fully supported by the free n8n self-hosted Community Edition
 | 32 | Code Node Support | Part of workflow node config |
 | 33 | AI/LangChain Workflow Support | Part of workflow node config |
 | 34 | Error Handling & Offline Behavior | App UI (no API needed) |
-| 35 | Mock Screens & Wireframes | Documentation only |
+| 35 | Mock Screens & Wireframes | Documentation — Complete |
 | 36 | Workflow Activation/Deactivation | POST /workflows/{id}/activate, /deactivate |
 | 37 | Workflow CRUD Operations | GET/POST/PUT/DELETE /workflows |
+| 38 | Test Workflow Validation | Import/render/round-trip test-data/workflows/*.json |
+| 39 | Expression Rendering | Expression display and validation in test workflows |
+| 40 | Configurable Debug Logging | DEBUG flag in .env, structured logs to console + file |
+| 41 | Visual Functional Testing | Playwright test runner with screenshots of every screen/step |
+| 42 | Self-Healing Test Loop | AI-powered diagnose → fix → re-test cycle (max 5 iterations) |
+| 43 | Visual Baseline Management | Baseline screenshots for diff comparison |
+| 44 | Node Type Metadata Registry | Bundled + fetched node definitions for canvas rendering |
+| 45 | Unit and Integration Tests | Unit tests for API client, parser, expressions; mock-based |
+| 46 | App Startup and Tech Stack | Tauri 2 + Svelte 5 + SvelteKit + Svelte Flow, CORS proxy, pagination |
 
 ### Phase 2 — Enterprise/Paid Features
 These features require an Enterprise or paid plan license. The n8n Community Edition explicitly excludes them (per docs.n8n.io/hosting/community-edition-features/). They can be implemented as UI stubs that show "Enterprise feature — requires license" or fully implemented for users who have a paid license.
@@ -127,6 +150,7 @@ These features are available on the free Community Edition but have no public AP
 6. THE App SHALL provide a "Create Workflow" button on the Workflows tab that navigates to a new empty Workflow Canvas.
 7. WHEN the user clicks a Workflow in the list, THE App SHALL navigate to the Workflow Canvas editor for that Workflow.
 8. THE App SHALL provide tag-based filtering on the Workflows tab, allowing the user to select one or more Tags to narrow the displayed list.
+9. THE App SHALL handle cursor-based pagination from the n8n API for all three tabs, implementing infinite scroll or a "Load More" button to fetch additional pages beyond the initial result set.
 
 ---
 
@@ -144,7 +168,7 @@ These features are available on the free Community Edition but have no public AP
 6. WHEN the user hovers over a Node on the Canvas, THE App SHALL display action icons for Execute (play), Deactivate/Activate (power), Delete (trash), and More options (ellipsis).
 7. WHEN the user clicks a Node on the Canvas, THE App SHALL open the Node Configuration Panel on the right side of the screen.
 8. THE App SHALL render Connection lines between connected Nodes, visually indicating data flow direction.
-9. WHEN the user clicks the "Execute Workflow" button, THE App SHALL trigger a manual execution of the Workflow via the n8n_Instance API and display execution progress indicators on each Node.
+9. WHEN the user clicks the "Execute Workflow" button, THE App SHALL trigger a manual execution of the Workflow. The App SHALL first attempt the public API endpoint `POST /api/v1/workflows/{id}/execute`. IF the public API does not support manual execution (no `workflow:execute` scope), THE App SHALL fall back to the internal REST endpoint `POST /rest/workflows/{id}/run` using session authentication. IF neither endpoint is available, THE App SHALL display a message instructing the user to execute the workflow from the n8n web UI.
 10. WHEN a Workflow execution completes, THE App SHALL display green checkmark icons on successfully executed Nodes and red X icons on failed Nodes.
 11. THE App SHALL provide a Sticky_Note button that allows the user to place text annotations on the Canvas.
 12. WHEN a new empty Workflow is opened, THE App SHALL display an "Add first step" placeholder prompting the user to add a Trigger_Node.
@@ -174,7 +198,7 @@ These features are available on the free Community Edition but have no public AP
 
 #### Acceptance Criteria
 
-1. WHEN the user navigates to the Executions page, THE App SHALL display a table of all Executions retrieved from the n8n_Instance API, showing workflow name, started-at timestamp, status, and execution ID.
+1. WHEN the user navigates to the Executions page, THE App SHALL display a table of all Executions retrieved from the n8n_Instance API, showing workflow name (resolved from workflowId via a local workflow ID → name cache), started-at timestamp, status, and execution ID.
 2. THE App SHALL provide status filter options: Any Status, Failed, Cancelled, Running, Success, and Waiting.
 3. THE App SHALL provide a workflow name filter dropdown to show Executions for a specific Workflow.
 4. THE App SHALL provide a time range filter to limit Executions to a selected date range.
@@ -182,6 +206,7 @@ These features are available on the free Community Edition but have no public AP
 6. WHEN the user views a failed Execution, THE App SHALL display a "Retry" button that re-triggers the Execution via the n8n_Instance API.
 7. WHEN the user selects one or more Executions, THE App SHALL provide a "Delete" action to remove the selected Executions via the n8n_Instance API.
 8. THE App SHALL support bulk operations for stopping and deleting multiple Executions simultaneously.
+9. THE App SHALL handle cursor-based pagination from the n8n API, implementing infinite scroll or a "Load More" button to fetch additional pages of Executions beyond the initial result set.
 
 ---
 
@@ -212,6 +237,7 @@ These features are available on the free Community Edition but have no public AP
 6. WHEN the user edits an existing Credential, THE App SHALL load the current field values (with secrets masked) and allow modification.
 7. WHEN the user deletes a Credential, THE App SHALL confirm the deletion and remove the Credential via the n8n_Instance API.
 8. THE App SHALL provide a "Transfer" action to move a Credential from one Project to another via the n8n_Instance API (Phase 2 — requires Projects).
+9. THE App SHALL handle cursor-based pagination from the n8n API, implementing infinite scroll or a "Load More" button to fetch additional Credentials beyond the initial result set.
 
 ---
 
@@ -451,6 +477,7 @@ These features are available on the free Community Edition but have no public AP
 3. THE App SHALL allow the user to rename and delete existing Tags via the n8n_Instance API.
 4. WHEN a Tag is deleted, THE App SHALL remove the Tag association from all Workflows that used the deleted Tag.
 5. THE App SHALL display assigned Tags as visual labels on Workflow list items in the Overview page.
+6. THE App SHALL handle cursor-based pagination from the n8n API when fetching Tags.
 
 ---
 
@@ -466,6 +493,7 @@ These features are available on the free Community Edition but have no public AP
 4. THE App SHALL allow the user to add, edit, and delete rows within a Data_Table via the n8n_Instance API.
 5. THE App SHALL support upsert operations on Data_Table rows via the n8n_Instance API.
 6. WHEN the user deletes a Data_Table, THE App SHALL confirm the deletion and remove the table and all rows via the n8n_Instance API.
+7. THE App SHALL handle cursor-based pagination from the n8n API for both the table list and row data within a table, implementing infinite scroll or a "Load More" button.
 
 ---
 
@@ -603,7 +631,9 @@ These features are available on the free Community Edition but have no public AP
 
 ---
 
-### Requirement 35: Mock Screens and Wireframe Documentation
+### Requirement 35: Mock Screens and Wireframe Documentation (Complete)
+
+**Status: Documentation — Complete.** All wireframes are in `mock-screens/`. This requirement is a process artifact, not a runtime feature.
 
 **User Story:** As a developer, I want detailed mock screen specifications and wireframe documentation for every application screen, so that the UI can be implemented accurately and compared against the actual n8n interface.
 
@@ -640,3 +670,218 @@ These features are available on the free Community Edition but have no public AP
 3. WHEN the user deletes a Workflow, THE App SHALL confirm the deletion and remove the Workflow via the n8n_Instance API.
 4. THE App SHALL prevent unsaved changes from being lost by displaying a confirmation dialog when the user navigates away from a modified Workflow without saving.
 5. FOR ALL valid Workflow definitions, creating a Workflow then retrieving the Workflow SHALL return a Workflow with equivalent node and connection structure (round-trip property).
+
+---
+
+### Requirement 38: Test Workflow Validation
+
+**User Story:** As a developer, I want the App to correctly parse, render, and round-trip the test workflow JSON files in `test-data/workflows/`, so that I can verify the App handles real-world n8n workflow structures.
+
+The test data contains four interconnected workflows that exercise the following n8n features:
+- **W0_Compile_Then_Run**: Orchestrator calling sub-workflows via Execute Workflow node
+- **W1_Compile_Source_Prompt**: AI/LangChain workflow with Chain LLM, OpenAI Chat Model, Structured Output Parser, and Data Table upsert
+- **W2_Execute_Step**: Sub-workflow triggered by Execute Workflow Trigger, with Data Table read/upsert and LangChain AI nodes
+- **W3_Run_Compiled_Graph**: Sequential step loop using Split In Batches, Data Table CRUD, and sub-workflow execution
+
+#### Acceptance Criteria
+
+##### 38.1 JSON Import and Parsing
+1. FOR EACH JSON file in `test-data/workflows/`, THE App SHALL successfully parse the file without errors.
+2. FOR EACH parsed workflow, THE App SHALL extract and display the correct workflow name, node count, and connection count.
+3. THE App SHALL correctly parse all node types present in the test data: `manualTrigger`, `set` (v3.4), `executeWorkflow` (v1.2), `executeWorkflowTrigger` (v1.1), `code` (v2), `chainLlm` (v1.4, LangChain), `lmChatOpenAi` (v1), `outputParserStructured` (v1.2, LangChain), `n8nDataTable` (v1), and `splitInBatches` (v3).
+
+##### 38.2 Canvas Rendering
+4. WHEN a test workflow is loaded into the Canvas, THE App SHALL render all nodes at their specified positions.
+5. THE App SHALL render all connection types present in the test data: `main` (standard data flow), `ai_languageModel` (LangChain model connection), and `ai_outputParser` (LangChain parser connection).
+6. THE App SHALL render LangChain Cluster_Nodes (chainLlm, lmChatOpenAi, outputParserStructured) with their specialized AI connection ports.
+7. THE App SHALL correctly render the Split In Batches node (W3) with its two output branches: loop body and loop-done.
+
+##### 38.3 Node Configuration Display
+8. WHEN the user clicks a Code node in a test workflow, THE App SHALL display the JavaScript code in the code editor with syntax highlighting.
+9. WHEN the user clicks a Set node, THE App SHALL display the configured field assignments (e.g., graphName, sourcePrompt).
+10. WHEN the user clicks an Execute Workflow node, THE App SHALL display the referenced sub-workflow ID.
+11. WHEN the user clicks a Data Table node, THE App SHALL display the configured table name, operation (get/upsert), and column mappings.
+12. WHEN the user clicks a Chain LLM node, THE App SHALL display the prompt template with expression references (e.g., `={{ $json.userPrompt }}`).
+
+##### 38.4 Workflow Settings
+13. FOR EACH test workflow, THE App SHALL correctly read and display the `executionOrder: "v1"` setting.
+14. THE App SHALL handle empty `pinData`, null `staticData`, and empty `meta.instanceId` without errors.
+
+##### 38.5 Round-Trip Property
+15. FOR EACH test workflow JSON file, importing the file via the App then exporting it SHALL produce a JSON structure with equivalent nodes (same id, name, type, typeVersion, position, parameters) and equivalent connections.
+16. THE round-trip export SHALL preserve LangChain-specific connection types (`ai_languageModel`, `ai_outputParser`) without loss or corruption.
+
+##### 38.6 Data Table References
+17. THE App SHALL recognize Data Table references in the test workflows: `compiled_graphs`, `step_results`, and `run_results`.
+18. WHEN displaying a workflow that references Data Tables, THE App SHALL indicate the referenced table names in the node configuration panel.
+
+##### 38.7 Sub-Workflow References
+19. THE App SHALL recognize Execute Workflow nodes that reference other workflows by ID (e.g., `REPLACE_WITH_W1_WORKFLOW_ID`).
+20. WHEN a referenced workflow ID matches an imported workflow, THE App SHALL display the referenced workflow name instead of the raw ID.
+21. WHEN a referenced workflow ID is a placeholder (e.g., `REPLACE_WITH_W1_WORKFLOW_ID`), THE App SHALL display a warning indicating the reference needs to be updated.
+
+---
+
+### Requirement 39: Expression Rendering in Test Workflows
+
+**User Story:** As a user, I want the App to correctly display and validate n8n expressions used in the test workflows, so that I can verify expression handling works with real-world patterns.
+
+#### Acceptance Criteria
+
+1. THE App SHALL correctly render expressions using `={{ }}` syntax found in the test workflows (e.g., `={{ $json.compileUserPrompt }}`, `={{ $json.runId }}`, `={{ JSON.stringify($json) }}`).
+2. THE App SHALL correctly render expressions referencing other nodes via `$('NodeName').first().json` syntax (e.g., `$('Build Compile Request').first().json.graphId`).
+3. THE App SHALL correctly render expressions referencing the trigger node via `$('Execute Sub-workflow Trigger').first().json` syntax.
+4. THE App SHALL display expression references in a visually distinct style (e.g., highlighted, monospace) within parameter fields.
+
+---
+
+### Requirement 40: Configurable Debug Logging
+
+**User Story:** As a developer, I want a configurable debug flag that enables detailed logging throughout the application, so that I can diagnose issues by reviewing structured log output.
+
+#### Acceptance Criteria
+
+1. THE App SHALL read a `DEBUG` flag from the `.env` file (values: `true` or `false`, default `false`).
+2. WHEN `DEBUG=true`, THE App SHALL log detailed structured entries for every API request (method, URL, headers excluding API key value, request body, response status, response body, duration in ms).
+3. WHEN `DEBUG=true`, THE App SHALL log all UI state transitions (screen navigated to, component mounted/unmounted, user interactions with timestamp).
+4. WHEN `DEBUG=true`, THE App SHALL log all workflow parsing events (file loaded, nodes parsed, connections resolved, expressions found, errors encountered).
+5. WHEN `DEBUG=false`, THE App SHALL log only errors and warnings.
+6. ALL log entries SHALL include a timestamp (ISO 8601), log level (DEBUG, INFO, WARN, ERROR), source module name, and a structured JSON payload.
+7. THE App SHALL write debug logs to both the browser console (via the webview) and a `debug.log` file in the project root (via Tauri's filesystem API) when `DEBUG=true`.
+8. THE App SHALL rotate the `debug.log` file when it exceeds 10MB, keeping the previous file as `debug.log.1`.
+9. THE `debug.log` file SHALL be listed in `.gitignore`.
+
+---
+
+### Requirement 41: Visual Functional Testing with Screenshots
+
+**User Story:** As a developer, I want an automated test runner that navigates the application through all test workflows, captures screenshots at each screen and step, and produces a visual test report, so that I can verify the UI renders correctly end-to-end.
+
+#### Acceptance Criteria
+
+##### 41.1 Test Runner Infrastructure
+1. THE App SHALL include a visual test runner (using Playwright or equivalent) that can be invoked via `npm run test:visual`.
+2. THE test runner SHALL start the App, connect to a running n8n_Instance, and execute a predefined test scenario sequence.
+3. THE test runner SHALL require `DEBUG=true` in `.env` so that debug logs are captured alongside screenshots.
+
+##### 41.2 Test Scenario: Import and Render All Test Workflows
+4. FOR EACH JSON file in `test-data/workflows/`, THE test runner SHALL import the workflow into the App and capture a screenshot of the Overview page showing the imported workflow in the list.
+5. FOR EACH imported workflow, THE test runner SHALL open the workflow in the Canvas editor and capture a full-canvas screenshot showing all nodes and connections.
+6. FOR EACH node in each test workflow, THE test runner SHALL click the node, wait for the Node Configuration Panel to open, and capture a screenshot of the panel showing the node's parameters.
+7. FOR EACH workflow, THE test runner SHALL open the Workflow Settings modal and capture a screenshot.
+
+##### 41.3 Test Scenario: Execution Flow
+8. FOR EACH test workflow that has a Manual Trigger, THE test runner SHALL click "Execute Workflow" and capture screenshots of: execution in progress (spinner on nodes), execution complete (green/red status on nodes), and the execution detail view.
+9. THE test runner SHALL navigate to the Global Executions page and capture a screenshot showing the execution entries.
+
+##### 41.4 Test Scenario: Screen Coverage
+10. THE test runner SHALL navigate to each Phase 1 screen (Overview, Credentials, Templates, Data Tables, Tags, Settings > App Preferences, Settings > Connection, Security Audit) and capture a screenshot of each.
+11. THE test runner SHALL capture screenshots of error states by using a mock HTTP server that simulates: invalid API key (401 response), server error (500 response), and connection timeout. THE test runner SHALL NOT stop or restart the actual n8n instance during tests.
+
+##### 41.5 Screenshot Storage and Naming
+12. ALL screenshots SHALL be saved to `test-results/screenshots/` with a naming convention: `{test-scenario}_{screen-name}_{timestamp}.png`.
+13. THE test runner SHALL generate an HTML report at `test-results/visual-report.html` that displays all screenshots in sequence with pass/fail annotations.
+14. THE `test-results/` directory SHALL be listed in `.gitignore`.
+
+##### 41.6 Functional Assertions
+15. FOR EACH test scenario, THE test runner SHALL verify functional correctness in addition to visual comparison: workflow list contains the expected number of imported workflows, node configuration panel displays the correct node name and type, execution status matches expected outcome, and sidebar navigation items are present and clickable.
+16. THE test runner SHALL log all assertion results (pass/fail with details) to the debug log and include them in the HTML report.
+
+---
+
+### Requirement 42: Self-Healing Test Loop
+
+**User Story:** As a developer, I want the test system to analyze its own screenshots and debug logs, identify failures, generate fixes, re-run tests, and repeat until all errors are resolved, so that the application can iteratively self-correct.
+
+#### Acceptance Criteria
+
+##### 42.1 Failure Detection
+1. AFTER each test run, THE test system SHALL analyze all captured screenshots using image comparison against expected baseline screenshots (stored in `test-data/baselines/`).
+2. THE test system SHALL analyze the `debug.log` file for ERROR-level entries and extract the error message, source module, and stack trace for each.
+3. THE test system SHALL produce a `test-results/failure-report.json` containing: list of screenshot mismatches (with diff percentage and highlighted diff image), list of log errors, and list of failed test assertions.
+
+##### 42.2 AI-Powered Diagnosis
+4. WHEN failures are detected, THE test system SHALL send the failure report (including screenshot paths, diff images, and log errors) to an AI analysis step.
+5. THE AI analysis step SHALL examine each failed screenshot and its corresponding debug log entries to produce a diagnosis: what went wrong, which source file is likely responsible, and a proposed fix.
+6. THE AI analysis step SHALL examine screenshots for usability issues including: misaligned components, overlapping elements, unreadable text, missing labels, broken layouts, inconsistent spacing, and inaccessible color contrast.
+7. THE diagnosis output SHALL be a structured JSON file at `test-results/diagnosis.json` containing: `failures[]` (each with `type`, `screen`, `description`, `source_file`, `proposed_fix`) and `usability_issues[]` (each with `screen`, `description`, `severity`, `proposed_fix`).
+
+##### 42.3 Automated Fix Application
+8. FOR EACH diagnosed failure with a proposed fix, THE test system SHALL apply the fix to the source code.
+9. AFTER applying fixes, THE test system SHALL rebuild the App and re-run the full visual test suite.
+10. THE test system SHALL repeat the cycle (test → diagnose → fix → re-test) for a maximum of 5 iterations.
+11. IF all tests pass before reaching the iteration limit, THE test system SHALL stop and produce a success report.
+12. IF the iteration limit is reached with remaining failures, THE test system SHALL stop and produce a report listing unresolved failures with all attempted fixes.
+13. THE test system SHALL create a git commit before each fix iteration so that changes can be reverted.
+14. THE test system SHALL only modify files matching `src/**/*.{ts,tsx,js,jsx,css,scss}` — it SHALL NOT modify `.env`, `.gitignore`, `package.json`, or any file outside `src/`.
+15. THE test system SHALL reject any proposed fix that adds new dependencies or modifies build configuration.
+
+##### 42.4 Usability Review
+13. ON EACH test run, THE test system SHALL perform a usability review of all captured screenshots, checking for: consistent visual hierarchy, readable typography, adequate touch/click target sizes, logical tab order indicators, proper contrast ratios, and alignment with n8n's design language.
+14. THE usability review SHALL produce a `test-results/usability-report.json` with issues categorized by severity (critical, major, minor, suggestion).
+15. CRITICAL and MAJOR usability issues SHALL be treated as failures and included in the self-healing fix cycle.
+
+##### 42.5 Audit Trail
+16. THE test system SHALL maintain a `test-results/heal-log.json` recording each iteration: timestamp, failures found, fixes applied, test results after fix, and whether the fix resolved the failure.
+17. THE heal log SHALL be human-readable and serve as a changelog of all automated corrections.
+
+---
+
+### Requirement 43: Visual Baseline Management
+
+**User Story:** As a developer, I want to manage baseline screenshots that define the expected visual state of each screen, so that the self-healing test loop has a reference to compare against.
+
+#### Acceptance Criteria
+
+1. THE App SHALL include a command `npm run test:update-baselines` that runs the full visual test suite and saves all screenshots as the new baselines in `test-data/baselines/`.
+2. EACH baseline screenshot SHALL be named to match its corresponding test screenshot (e.g., `import_W0_canvas_{timestamp}.png` → `import_W0_canvas.png` baseline).
+3. WHEN no baseline exists for a screenshot, THE test system SHALL treat the first run's screenshot as the baseline and flag it for manual review.
+4. THE `test-data/baselines/` directory SHALL be committed to git so that baselines are shared across the team.
+5. THE test system SHALL support a configurable diff threshold (default 2%) below which pixel differences are ignored (to handle anti-aliasing and rendering variations).
+
+---
+
+### Requirement 44: Node Type Metadata Registry
+
+**User Story:** As a developer, I want the App to have access to node type definitions (icons, parameter schemas, categories, connection port types), so that the canvas editor and node configuration panel can render correctly.
+
+#### Acceptance Criteria
+
+1. THE App SHALL maintain a node type registry containing: node type identifier, display name, icon, category, version, parameter schema (field names, types, defaults, options), and connection port definitions (input/output types including AI-specific ports).
+2. THE App SHALL bundle a static node type registry covering all built-in n8n node types present in the test workflows: `manualTrigger`, `set`, `executeWorkflow`, `executeWorkflowTrigger`, `code`, `splitInBatches`, `n8nDataTable`, `chainLlm`, `lmChatOpenAi`, and `outputParserStructured`.
+3. THE App SHALL attempt to fetch the full node type list from the n8n_Instance internal endpoint (`GET /rest/nodes`) when available, falling back to the bundled static registry when the endpoint is inaccessible.
+4. THE Node Selection Panel (Req 3 AC#4) SHALL use the node type registry to display categorized node lists with icons and descriptions.
+5. THE Node Configuration Panel (Req 4 AC#2) SHALL use the node type registry to render parameter forms with correct field types, labels, and validation rules.
+6. THE App SHALL provide a command `npm run update-node-registry` that fetches the latest node type definitions from a running n8n_Instance and updates the bundled static registry.
+
+---
+
+### Requirement 45: Unit and Integration Tests for Core Modules
+
+**User Story:** As a developer, I want unit and integration tests for the core application modules, so that I can catch bugs early without relying solely on visual E2E tests.
+
+#### Acceptance Criteria
+
+1. THE App SHALL include unit tests for the API client module, verifying correct header construction (X-N8N-API-KEY), URL building, error handling (401, 5xx, network errors), and pagination cursor handling.
+2. THE App SHALL include unit tests for the workflow JSON parser, verifying correct extraction of nodes, connections (including AI-specific connection types), settings, and metadata from all test workflow files.
+3. THE App SHALL include unit tests for the expression parser, verifying correct identification and rendering of `={{ }}` expressions, `$json` references, and `$('NodeName')` references.
+4. THE App SHALL include unit tests for the node type registry, verifying lookup by type identifier and version, and fallback behavior when a type is not found.
+5. ALL unit tests SHALL use mock API responses (not a live n8n_Instance) and SHALL be runnable via `npm test`.
+6. THE App SHALL include integration tests that import each test workflow JSON file, parse it, and verify the round-trip property (export produces equivalent JSON).
+
+---
+
+### Requirement 46: Application Startup and Technology Stack
+
+**User Story:** As a developer, I want a clearly defined technology stack and startup process, so that the application can be built and run consistently.
+
+#### Acceptance Criteria
+
+1. THE App SHALL be runnable via `npm run dev` (development with HMR), `npm run build` (production SPA build), `npm run tauri dev` (desktop app in dev mode), and `npm run tauri build` (distributable desktop binary).
+2. THE App SHALL use the technology stack defined in `docs/TECH_STACK.md`: Svelte 5 + SvelteKit (frontend framework), Svelte Flow / @xyflow/svelte (node canvas), Tauri 2 (desktop shell), Vite (build tool), Tailwind CSS 4 (styling), TypeScript strict mode (language), Vitest (unit tests), and Playwright (E2E/visual tests).
+3. THE App SHALL use Tauri's Rust HTTP plugin to proxy all n8n API requests, bypassing browser CORS restrictions. The frontend SHALL NOT make direct fetch calls to the n8n instance from the webview.
+4. THE App SHALL use Tauri's filesystem API for writing `debug.log` files and exporting workflow JSON files.
+5. THE App SHALL use SvelteKit with `@sveltejs/adapter-static` to compile to a pure static SPA suitable for Tauri's webview.
+6. THE App SHALL handle API list endpoints with cursor-based pagination, implementing infinite scroll or "Load More" for workflows (Req 2), executions (Req 5), credentials (Req 7), tags (Req 23), and data tables (Req 24).
+7. THE App SHALL resolve workflow names from workflow IDs when displaying execution lists (Req 5), by maintaining a local cache of workflow ID → name mappings refreshed on each Overview page load.
+8. THE App SHALL use Svelte 5 runes (`$state`, `$derived`, `$effect`) for state management — no external state management library.

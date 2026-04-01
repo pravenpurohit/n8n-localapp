@@ -1,0 +1,412 @@
+{
+  "name": "W3_Run_Compiled_Graph",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "w3-n1",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "duplicateItem": false,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "graphId",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "w3-n2",
+      "name": "Run Input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        250,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTable": "compiled_graphs",
+        "filters": {
+          "conditions": [
+            {
+              "column": "graph_id",
+              "operator": "equals",
+              "value": "={{ $json.graphId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "w3-n3",
+      "name": "Load Graph",
+      "type": "n8n-nodes-base.n8nDataTable",
+      "typeVersion": 1,
+      "position": [
+        500,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const row = $input.first().json;\nif (!row || !row.manifest_json) {\n  throw new Error('Compiled graph not found');\n}\n\nlet manifest;\ntry {\n  manifest = JSON.parse(row.manifest_json);\n} catch (e) {\n  throw new Error('manifest_json is not valid JSON');\n}\n\nconst runId = `run-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;\nconst startedAt = new Date().toISOString();\n\nreturn [{\n  json: {\n    runId,\n    graphId: row.graph_id,\n    graphName: row.graph_name,\n    sourcePrompt: row.source_prompt,\n    manifest,\n    startedAt\n  }\n}];",
+        "mode": "runOnceForAllItems"
+      },
+      "id": "w3-n4",
+      "name": "Build Run Envelope",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTable": "run_results",
+        "matchingColumns": [
+          "run_id"
+        ],
+        "columns": {
+          "mappingMode": "defineBelow",
+          "values": [
+            {
+              "column": "run_id",
+              "value": "={{ $json.runId }}"
+            },
+            {
+              "column": "graph_id",
+              "value": "={{ $json.graphId }}"
+            },
+            {
+              "column": "graph_name",
+              "value": "={{ $json.graphName }}"
+            },
+            {
+              "column": "status",
+              "value": "running"
+            },
+            {
+              "column": "final_output_json",
+              "value": ""
+            },
+            {
+              "column": "final_output_markdown",
+              "value": ""
+            },
+            {
+              "column": "started_at",
+              "value": "={{ $json.startedAt }}"
+            },
+            {
+              "column": "completed_at",
+              "value": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "w3-n5",
+      "name": "Start Run Result",
+      "type": "n8n-nodes-base.n8nDataTable",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        250
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const { runId, graphId, graphName, sourcePrompt, manifest } = $json;\nconst execution_order = manifest.execution_order || [];\n\nif (!Array.isArray(execution_order) || execution_order.length === 0) {\n  throw new Error('Manifest contains no execution_order');\n}\n\nreturn execution_order.map(step => ({\n  json: {\n    runId,\n    graphId,\n    graphName,\n    sourcePrompt,\n    step\n  }\n}));",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "w3-n6",
+      "name": "Explode Steps",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "w3-n7",
+      "name": "Loop Steps",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1400,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_W2_WORKFLOW_ID",
+          "mode": "id"
+        }
+      },
+      "id": "w3-n8",
+      "name": "Run One Step",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1700,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "if (!$json.quality_gate_pass) {\n  throw new Error(`Step failed quality gate: ${$json.step_id}`);\n}\nreturn $input.all();",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "w3-n9",
+      "name": "Abort If Step Failed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const all = $input.all().map(i => i.json);\nif (!all.length) {\n  throw new Error('No step outputs found');\n}\n\nconst final = all.find(item => item.step_id === 'P_FINAL') || all[all.length - 1];\nconst completedAt = new Date().toISOString();\n\nreturn [{\n  json: {\n    runId: final.runId,\n    graphId: final.graphId,\n    graphName: final.graphName,\n    final_output_json: JSON.stringify(final),\n    final_output_markdown: final.markdown_output || '',\n    completedAt\n  }\n}];",
+        "mode": "runOnceForAllItems"
+      },
+      "id": "w3-n10",
+      "name": "Pick Final Step",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1700,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTable": "run_results",
+        "matchingColumns": [
+          "run_id"
+        ],
+        "columns": {
+          "mappingMode": "defineBelow",
+          "values": [
+            {
+              "column": "run_id",
+              "value": "={{ $json.runId }}"
+            },
+            {
+              "column": "graph_id",
+              "value": "={{ $json.graphId }}"
+            },
+            {
+              "column": "graph_name",
+              "value": "={{ $json.graphName }}"
+            },
+            {
+              "column": "status",
+              "value": "completed"
+            },
+            {
+              "column": "final_output_json",
+              "value": "={{ $json.final_output_json }}"
+            },
+            {
+              "column": "final_output_markdown",
+              "value": "={{ $json.final_output_markdown }}"
+            },
+            {
+              "column": "started_at",
+              "value": ""
+            },
+            {
+              "column": "completed_at",
+              "value": "={{ $json.completedAt }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "w3-n11",
+      "name": "Finish Run Result",
+      "type": "n8n-nodes-base.n8nDataTable",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: $('Pick Final Step').first().json\n}];",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "w3-n12",
+      "name": "Return Final Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2300,
+        -300
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Run Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Input": {
+      "main": [
+        [
+          {
+            "node": "Load Graph",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Graph": {
+      "main": [
+        [
+          {
+            "node": "Build Run Envelope",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Run Envelope": {
+      "main": [
+        [
+          {
+            "node": "Explode Steps",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Start Run Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Explode Steps": {
+      "main": [
+        [
+          {
+            "node": "Loop Steps",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Steps": {
+      "main": [
+        [
+          {
+            "node": "Run One Step",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pick Final Step",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run One Step": {
+      "main": [
+        [
+          {
+            "node": "Abort If Step Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Abort If Step Failed": {
+      "main": [
+        [
+          {
+            "node": "Loop Steps",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick Final Step": {
+      "main": [
+        [
+          {
+            "node": "Finish Run Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finish Run Result": {
+      "main": [
+        [
+          {
+            "node": "Return Final Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "instanceId": ""
+  }
+}

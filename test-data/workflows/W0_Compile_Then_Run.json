@@ -1,0 +1,150 @@
+{
+  "name": "W0_Compile_Then_Run",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "w0-n1",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "duplicateItem": false,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "graphName",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "sourcePrompt",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "w0-n2",
+      "name": "Input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        250,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_W1_WORKFLOW_ID",
+          "mode": "id"
+        }
+      },
+      "id": "w0-n3",
+      "name": "Compile",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        500,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    graphId: $json.graph_id\n  }\n}];",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "w0-n4",
+      "name": "Build Run Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        750,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_W3_WORKFLOW_ID",
+          "mode": "id"
+        }
+      },
+      "id": "w0-n5",
+      "name": "Run Graph",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1000,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input": {
+      "main": [
+        [
+          {
+            "node": "Compile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compile": {
+      "main": [
+        [
+          {
+            "node": "Build Run Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Run Input": {
+      "main": [
+        [
+          {
+            "node": "Run Graph",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "instanceId": ""
+  }
+}

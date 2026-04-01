@@ -3,6 +3,13 @@
 .env.local
 .env.*.local
 
+# Debug logs
+debug.log
+debug.log.1
+
+# Test results (screenshots, reports)
+test-results/
+
 # Dependencies
 node_modules/
 
@@ -12,6 +19,7 @@ build/
 
 # OS files
 .DS_Store
+**/.DS_Store
 Thumbs.db
 
 # IDE

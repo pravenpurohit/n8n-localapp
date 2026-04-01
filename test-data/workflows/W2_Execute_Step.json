@@ -1,0 +1,352 @@
+{
+  "name": "W2_Execute_Step",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "w2-n1",
+      "name": "Execute Sub-workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTable": "step_results",
+        "filters": {
+          "conditions": [
+            {
+              "column": "run_id",
+              "operator": "equals",
+              "value": "={{ $('Execute Sub-workflow Trigger').first().json.runId }}"
+            }
+          ]
+        },
+        "options": {
+          "alwaysOutputData": true
+        }
+      },
+      "id": "w2-n2",
+      "name": "Load Prior Step Results",
+      "type": "n8n-nodes-base.n8nDataTable",
+      "typeVersion": 1,
+      "position": [
+        300,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const trigger = $('Execute Sub-workflow Trigger').first().json;\nconst rows = $input.all().map(i => i.json);\nconst needed = new Set(trigger.step.depends_on || []);\n\nconst upstream_context = {};\n\nfor (const row of rows) {\n  if (!needed.has(row.step_id)) continue;\n\n  let parsed = {};\n  try {\n    parsed = JSON.parse(row.output_json || '{}');\n  } catch (e) {\n    parsed = {\n      status: 'blocked',\n      parse_error: true,\n      raw: row.output_json || ''\n    };\n  }\n\n  upstream_context[row.step_id] = parsed;\n}\n\nreturn [{\n  json: {\n    ...trigger,\n    upstream_context\n  }\n}];",
+        "mode": "runOnceForAllItems"
+      },
+      "id": "w2-n3",
+      "name": "Build Upstream Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const step = $json.step;\n\nconst systemPrompt = `\nYou are a deterministic workflow step executor inside n8n.\n\nYou execute exactly one compiled prompt step.\n\nHard rules:\n1. Execute ONLY the current step.\n2. Do NOT perform downstream work.\n3. Use the source prompt and upstream_context only as provided.\n4. Preserve source-prompt constraints that still apply to this step.\n5. If required information is missing, do not invent it.\n6. If required information is missing or a quality gate cannot be passed:\n   - set status = \"blocked\" or\n   - set quality_gate_pass = false\n   - explain the reason in open_gaps or warnings\n7. Return every required output label exactly once in sections.\n8. markdown_output must render the same sections in the same order using markdown headings.\n9. For aggregate or recombine steps:\n   - deduplicate overlap\n   - compare conflicts\n   - flag missing sections instead of filling them in\n10. No filler. No preamble. No motivational language.\n11. Self-check against the quality_gate before returning.\n\nOutput rules:\n- Return only JSON matching the required schema.\n- The section labels must match required_output_labels exactly.\n`.trim();\n\nconst userPrompt = `\nRUN CONTEXT\nrun_id: ${$json.runId}\ngraph_id: ${$json.graphId}\ngraph_name: ${$json.graphName}\n\nSOURCE PROMPT\n${$json.sourcePrompt}\n\nCURRENT STEP MANIFEST\n${JSON.stringify(step, null, 2)}\n\nUPSTREAM CONTEXT\n${JSON.stringify($json.upstream_context || {}, null, 2)}\n\nReturn only JSON matching the required schema.\n`.trim();\n\nreturn [{\n  json: {\n    ...$json,\n    systemPrompt,\n    userPrompt\n  }\n}];",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "w2-n4",
+      "name": "Build Step Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.userPrompt }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "={{ $json.systemPrompt }}",
+              "type": "systemMessage"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "w2-n5",
+      "name": "Run Step",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        1200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"type\": \"object\", \"properties\": {\"status\": {\"type\": \"string\", \"enum\": [\"ok\", \"blocked\"]}, \"step_id\": {\"type\": \"string\"}, \"step_name\": {\"type\": \"string\"}, \"quality_gate_pass\": {\"type\": \"boolean\"}, \"open_gaps\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}}, \"warnings\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}}, \"sections\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"label\": {\"type\": \"string\"}, \"content\": {\"type\": \"string\"}}, \"required\": [\"label\", \"content\"]}}, \"markdown_output\": {\"type\": \"string\"}}, \"required\": [\"status\", \"step_id\", \"step_name\", \"quality_gate_pass\", \"open_gaps\", \"warnings\", \"sections\", \"markdown_output\"]}"
+      },
+      "id": "w2-n6",
+      "name": "Step Result Schema",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        1050,
+        250
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "id": "w2-n7",
+      "name": "Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        1050,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json;\nlet normalized = raw;\n\nif (raw.output && typeof raw.output === 'object' && !Array.isArray(raw.output)) {\n  normalized = raw.output;\n} else if (raw.response && typeof raw.response === 'object' && !Array.isArray(raw.response)) {\n  normalized = raw.response;\n} else if (raw.text && typeof raw.text === 'string') {\n  try {\n    normalized = JSON.parse(raw.text);\n  } catch (e) {\n    throw new Error(`Step returned unparseable output: ${raw.text.slice(0, 1000)}`);\n  }\n}\n\nreturn [{ json: normalized }];",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "w2-n8",
+      "name": "Normalize Step Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1500,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const trigger = $('Execute Sub-workflow Trigger').first().json;\nconst step = trigger.step;\nconst result = { ...$json };\n\nconst labels = new Set((result.sections || []).map(s => s.label));\nconst required = step.required_output_labels || [];\nconst missing = required.filter(label => !labels.has(label));\n\nconst quality_gate_pass = Boolean(result.quality_gate_pass) && missing.length === 0;\nconst now = new Date().toISOString();\n\nreturn [{\n  json: {\n    ...result,\n    runId: trigger.runId,\n    graphId: trigger.graphId,\n    graphName: trigger.graphName,\n    step_id: result.step_id || step.id,\n    step_name: result.step_name || step.name,\n    quality_gate_pass,\n    warnings: [\n      ...(result.warnings || []),\n      ...(missing.length ? [`Missing required labels: ${missing.join(', ')}`] : [])\n    ],\n    result_key: `${trigger.runId}::${result.step_id || step.id}`,\n    completed_at: now\n  }\n}];",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "w2-n9",
+      "name": "Validate Step Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTable": "step_results",
+        "matchingColumns": [
+          "result_key"
+        ],
+        "columns": {
+          "mappingMode": "defineBelow",
+          "values": [
+            {
+              "column": "result_key",
+              "value": "={{ $json.result_key }}"
+            },
+            {
+              "column": "run_id",
+              "value": "={{ $json.runId }}"
+            },
+            {
+              "column": "graph_id",
+              "value": "={{ $json.graphId }}"
+            },
+            {
+              "column": "graph_name",
+              "value": "={{ $json.graphName }}"
+            },
+            {
+              "column": "step_id",
+              "value": "={{ $json.step_id }}"
+            },
+            {
+              "column": "step_name",
+              "value": "={{ $json.step_name }}"
+            },
+            {
+              "column": "status",
+              "value": "={{ $json.status }}"
+            },
+            {
+              "column": "quality_gate_pass",
+              "value": "={{ $json.quality_gate_pass }}"
+            },
+            {
+              "column": "output_json",
+              "value": "={{ JSON.stringify($json) }}"
+            },
+            {
+              "column": "markdown_output",
+              "value": "={{ $json.markdown_output }}"
+            },
+            {
+              "column": "completed_at",
+              "value": "={{ $json.completed_at }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "w2-n10",
+      "name": "Upsert Step Result",
+      "type": "n8n-nodes-base.n8nDataTable",
+      "typeVersion": 1,
+      "position": [
+        2100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: $('Validate Step Output').first().json\n}];",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "w2-n11",
+      "name": "Return Step Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Execute Sub-workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Load Prior Step Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Prior Step Results": {
+      "main": [
+        [
+          {
+            "node": "Build Upstream Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Upstream Context": {
+      "main": [
+        [
+          {
+            "node": "Build Step Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Step Request": {
+      "main": [
+        [
+          {
+            "node": "Run Step",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Step": {
+      "main": [
+        [
+          {
+            "node": "Normalize Step Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Run Step",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step Result Schema": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Run Step",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Step Output": {
+      "main": [
+        [
+          {
+            "node": "Validate Step Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Step Output": {
+      "main": [
+        [
+          {
+            "node": "Upsert Step Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Step Result": {
+      "main": [
+        [
+          {
+            "node": "Return Step Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "instanceId": ""
+  }
+}
