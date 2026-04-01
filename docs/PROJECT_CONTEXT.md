@@ -12,7 +12,7 @@ A local desktop app (Tauri 2 + Svelte 5 + Svelte Flow) that replicates the n8n.c
 - Branch: main (all work committed and pushed)
 - Owner: pravenpurohit (pravenpurohit@gmail.com)
 
-## Current State: Requirements & Design Complete, Implementation Not Started
+## Current State: Requirements Complete, Design & Tasks Not Started
 
 ### What's Done
 
@@ -77,19 +77,10 @@ XAI_API_KEY=
 
 ### After Multi-LLM Workflows
 
-1. **Create design.md** — next phase of the spec workflow (requirements → design → tasks)
-2. **Create tasks.md** — implementation task list
+1. **Create design.md** — technical design document (architecture, component design, data flow, API integration patterns). This is the next phase of the spec workflow: requirements → design → tasks.
+2. **Create tasks.md** — implementation task list derived from the design
 3. **Scaffold the Tauri + SvelteKit project** (`npm create tauri-app`)
-4. **Implement Phase 1 requirements** in order:
-   - Req 46: Project setup (Tauri + SvelteKit + Svelte Flow + Tailwind)
-   - Req 44: Node type metadata registry
-   - Req 1: .env auth
-   - Req 29: Sidebar navigation
-   - Req 2: Overview page
-   - Req 3: Workflow canvas editor
-   - Req 4: Node configuration panel
-   - ... (remaining Phase 1 requirements)
-5. **Run visual tests** (Req 41) and **self-healing loop** (Req 42)
+4. **Implement Phase 1 requirements** per the task list
 
 ## Key Files
 
