@@ -784,7 +784,7 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Verify all node types in test data are present in bundled registry: manualTrigger, set, executeWorkflow, executeWorkflowTrigger, code, splitInBatches, n8nDataTable, chainLlm, lmChatOpenAi, outputParserStructured
     - _Requirements: 38.1.3, 44.2_
 
-- [ ] 24. Checkpoint — All unit and integration tests pass
+- [x] 24. Checkpoint — All unit and integration tests pass
   - Ensure `npm test` passes all unit and integration tests
   - Ensure `cargo test` passes all Rust backend tests
 
@@ -868,58 +868,58 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Maintain `test-results/heal-log.json`: each iteration with timestamp, failures found, fixes applied, results after fix, resolution status
     - _Requirements: 42.5.16, 42.5.17_
 
-- [ ] 26. Phase 2 enterprise feature stubs
-  - [ ] 26.1 Implement Variables management stub (Req 9)
+- [x] 26. Phase 2 enterprise feature stubs
+  - [x] 26.1 Implement Variables management stub (Req 9)
     - Create route `/settings/variables` with "Enterprise feature — requires license" message
     - Show mock UI layout matching wireframe
     - _Requirements: 9_
 
-  - [ ] 26.2 Implement Insights dashboard stub (Req 10)
+  - [x] 26.2 Implement Insights dashboard stub (Req 10)
     - Create route `/insights` with enterprise license message
     - Show mock summary banner and chart placeholders
     - _Requirements: 10_
 
-  - [ ] 26.3 Implement Projects management stub (Req 11)
+  - [x] 26.3 Implement Projects management stub (Req 11)
     - Create route `/projects` with enterprise license message
     - _Requirements: 11_
 
-  - [ ] 26.4 Implement Users management stub (Req 13)
+  - [x] 26.4 Implement Users management stub (Req 13)
     - Create route `/settings/users` with enterprise license message
     - _Requirements: 13_
 
-  - [ ] 26.5 Implement LDAP settings stub (Req 15)
+  - [x] 26.5 Implement LDAP settings stub (Req 15)
     - Create route `/settings/ldap` with enterprise license message
     - _Requirements: 15_
 
-  - [ ] 26.6 Implement SAML/SSO settings stub (Req 16)
+  - [x] 26.6 Implement SAML/SSO settings stub (Req 16)
     - Create route `/settings/saml` with enterprise license message
     - _Requirements: 16_
 
-  - [ ] 26.7 Implement Log Streaming settings stub (Req 17)
+  - [x] 26.7 Implement Log Streaming settings stub (Req 17)
     - Create route `/settings/log-streaming` with enterprise license message
     - _Requirements: 17_
 
-  - [ ] 26.8 Implement External Secrets settings stub (Req 18)
+  - [x] 26.8 Implement External Secrets settings stub (Req 18)
     - Create route `/settings/external-secrets` with enterprise license message
     - _Requirements: 18_
 
-  - [ ] 26.9 Implement Source Control settings stub (Req 20)
+  - [x] 26.9 Implement Source Control settings stub (Req 20)
     - Create route `/settings/source-control` with enterprise license message
     - _Requirements: 20_
 
-  - [ ] 26.10 Implement Workflow History stub (Req 22)
+  - [x] 26.10 Implement Workflow History stub (Req 22)
     - History button in canvas TopBar shows enterprise license message
     - _Requirements: 22_
 
-  - [ ] 26.11 Implement Sharing dialog stub (Req 27)
+  - [x] 26.11 Implement Sharing dialog stub (Req 27)
     - Share button in canvas TopBar shows enterprise license message
     - _Requirements: 27_
 
-  - [ ] 26.12 Implement AI Assistant panel stub (Req 28)
+  - [x] 26.12 Implement AI Assistant panel stub (Req 28)
     - "Ask Assistant" button shows enterprise license message
     - _Requirements: 28_
 
-- [ ] 27. Final checkpoint — Complete application
+- [x] 27. Final checkpoint — Complete application
   - Ensure all Phase 1 features are functional with live n8n API
   - Ensure all Phase 2 stubs render with enterprise license messages
   - Ensure `npm test` passes all unit, integration, and property tests
