@@ -35,31 +35,39 @@ export function workflowNodesToFlowNodes(
 	});
 }
 
-/** Convert n8n WorkflowConnections to Svelte Flow edges */
-export function workflowConnectionsToEdges(connections: WorkflowConnections): SvelteFlowEdge[] {
+/** Convert n8n WorkflowConnections to Svelte Flow edges.
+ *  Requires the flow nodes array to resolve node names → Svelte Flow IDs. */
+export function workflowConnectionsToEdges(
+	connections: WorkflowConnections,
+	flowNodes: SvelteFlowNode[]
+): SvelteFlowEdge[] {
 	const edges: SvelteFlowEdge[] = [];
-	const nodeNameToId = new Map<string, string>();
 
-	// Note: connections use node names as keys, but Svelte Flow uses IDs.
-	// We store the source name in the edge and resolve during rendering.
-	// For now, use the source name as a proxy since we need the full node list for ID resolution.
+	// n8n connections are keyed by node name, but Svelte Flow uses node IDs.
+	const nameToId = new Map<string, string>();
+	for (const node of flowNodes) {
+		nameToId.set(node.data.label as string, node.id);
+	}
+
 	for (const [sourceName, outputs] of Object.entries(connections)) {
+		const sourceId = nameToId.get(sourceName) ?? sourceName;
 		for (const [connectionType, targetGroups] of Object.entries(
 			outputs as Record<string, ConnectionTarget[][]>
 		)) {
 			for (let outputIdx = 0; outputIdx < targetGroups.length; outputIdx++) {
 				for (const target of targetGroups[outputIdx]) {
+					const targetId = nameToId.get(target.node) ?? target.node;
 					const sourceHandle = `${connectionType}-${outputIdx}`;
 					const targetHandle = `${target.type}-${target.index}`;
-					const id = `${sourceName}-${sourceHandle}-${target.node}-${targetHandle}`;
+					const id = `${sourceId}-${sourceHandle}-${targetId}-${targetHandle}`;
 					edges.push({
 						id,
-						source: sourceName,
-						target: target.node,
+						source: sourceId,
+						target: targetId,
 						sourceHandle,
 						targetHandle,
 						type: 'customEdge',
-						data: { connectionType }
+						data: { connectionType, sourceName, targetName: target.node }
 					});
 				}
 			}
@@ -84,12 +92,24 @@ export function flowNodesToWorkflowNodes(nodes: SvelteFlowNode[]): WorkflowNode[
 		}));
 }
 
-/** Convert Svelte Flow edges back to n8n WorkflowConnections */
-export function edgesToWorkflowConnections(edges: SvelteFlowEdge[]): WorkflowConnections {
+/** Convert Svelte Flow edges back to n8n WorkflowConnections.
+ *  Requires the flow nodes array to resolve Svelte Flow IDs → node names. */
+export function edgesToWorkflowConnections(
+	edges: SvelteFlowEdge[],
+	flowNodes: SvelteFlowNode[]
+): WorkflowConnections {
 	const connections: WorkflowConnections = {};
 
+	// n8n connections are keyed by node name, not ID
+	const idToName = new Map<string, string>();
+	for (const node of flowNodes) {
+		idToName.set(node.id, (node.data.label as string) ?? node.id);
+	}
+
 	for (const edge of edges) {
-		const sourceName = edge.source;
+		// Prefer the stored sourceName/targetName from load, fall back to ID→name lookup
+		const sourceName = (edge.data?.sourceName as string) ?? idToName.get(edge.source) ?? edge.source;
+		const targetName = (edge.data?.targetName as string) ?? idToName.get(edge.target) ?? edge.target;
 		const sourceHandle = edge.sourceHandle ?? 'main-0';
 		const targetHandle = edge.targetHandle ?? 'main-0';
 
@@ -102,13 +122,12 @@ export function edgesToWorkflowConnections(edges: SvelteFlowEdge[]): WorkflowCon
 		if (!connections[sourceName]) connections[sourceName] = {};
 		if (!connections[sourceName][connectionType]) connections[sourceName][connectionType] = [];
 
-		// Ensure the output index array is large enough
 		while (connections[sourceName][connectionType].length <= outputIdx) {
 			connections[sourceName][connectionType].push([]);
 		}
 
 		connections[sourceName][connectionType][outputIdx].push({
-			node: edge.target,
+			node: targetName,
 			type: targetType,
 			index: targetIdx
 		});

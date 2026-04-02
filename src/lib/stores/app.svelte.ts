@@ -13,13 +13,8 @@ class AppStore {
 	async initialize(): Promise<void> {
 		try {
 			await apiClient.initialize();
-			this.config = {
-				n8nBaseUrl: '',
-				n8nApiKey: '',
-				debug: false
-			};
 
-			// Read env config for debug flag
+			// Read env config (apiClient.initialize already read it, but we need the full config)
 			const { invoke } = await import('@tauri-apps/api/core');
 			const envConfig = await invoke<AppConfig>('read_env_config');
 			this.config = envConfig;

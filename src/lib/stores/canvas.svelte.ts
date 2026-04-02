@@ -2,7 +2,6 @@ import type { Node as SvelteFlowNode, Edge as SvelteFlowEdge } from '@xyflow/sve
 import type { Workflow, WorkflowNode, WorkflowSettings, Tag } from '$lib/types';
 import { getWorkflow, updateWorkflow, createWorkflow } from '$lib/api/workflows';
 import { activateWorkflow, deactivateWorkflow } from '$lib/api/workflows';
-import { parseWorkflowJson, serializeWorkflow } from '$lib/core/workflow-parser';
 import { nodeRegistry } from '$lib/core/node-registry';
 import { logger } from '$lib/core/logger';
 import {
@@ -38,14 +37,14 @@ class CanvasStore {
 		this.workflowSettings = workflow.settings;
 		this.versionId = workflow.versionId;
 		this.nodes = workflowNodesToFlowNodes(workflow.nodes, nodeRegistry);
-		this.edges = workflowConnectionsToEdges(workflow.connections);
+		this.edges = workflowConnectionsToEdges(workflow.connections, this.nodes);
 		this.executionStatus = new Map();
 		this.isDirty = false;
 	}
 
 	async saveWorkflow(): Promise<void> {
 		const workflowNodes = flowNodesToWorkflowNodes(this.nodes);
-		const connections = edgesToWorkflowConnections(this.edges);
+		const connections = edgesToWorkflowConnections(this.edges, this.nodes);
 		const payload: Partial<Workflow> = {
 			name: this.workflowName,
 			nodes: workflowNodes,

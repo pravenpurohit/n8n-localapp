@@ -7,6 +7,8 @@
 
 	function handleInput(e: Event) {
 		text = (e.target as HTMLTextAreaElement).value;
+		// Persist text back to node data so it survives save
+		data.text = text;
 		canvasStore.markDirty();
 	}
 </script>

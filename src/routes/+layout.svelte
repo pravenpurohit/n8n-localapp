@@ -5,11 +5,20 @@
 	import { goto } from '$app/navigation';
 	import Shell from '$lib/components/layout/Shell.svelte';
 	import { appStore } from '$lib/stores/app.svelte';
+	import { logger } from '$lib/core/logger';
 
 	let { children }: { children: Snippet } = $props();
 	let loading = $state(true);
 
 	onMount(async () => {
+		// Global unhandled error/rejection handlers
+		window.onerror = (_msg, _src, _line, _col, error) => {
+			logger.error('global', 'Unhandled error', { message: error?.message ?? String(_msg) });
+		};
+		window.onunhandledrejection = (event) => {
+			logger.error('global', 'Unhandled promise rejection', { reason: String(event.reason) });
+		};
+
 		try {
 			await appStore.initialize();
 		} catch {

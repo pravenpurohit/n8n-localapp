@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createCredential, getCredentialSchema, testCredential, deleteCredential } from '$lib/api/credentials';
+	import { createCredential, getCredentialSchema } from '$lib/api/credentials';
 	import { credentialsStore } from '$lib/stores/credentials.svelte';
 	import type { CredentialSchemaField } from '$lib/types';
 

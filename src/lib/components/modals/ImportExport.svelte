@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { parseWorkflowJson } from '$lib/core/workflow-parser';
+	import { parseWorkflowJson, serializeWorkflow } from '$lib/core/workflow-parser';
 	import { createWorkflow } from '$lib/api/workflows';
 	import { canvasStore } from '$lib/stores/canvas.svelte';
+	import { flowNodesToWorkflowNodes, edgesToWorkflowConnections } from '$lib/stores/flow-mapping';
 
 	let { open = $bindable(false) }: { open?: boolean } = $props();
 
@@ -28,12 +29,17 @@
 	}
 
 	function handleExport() {
-		const json = JSON.stringify({
+		const workflowNodes = flowNodesToWorkflowNodes(canvasStore.nodes);
+		const connections = edgesToWorkflowConnections(canvasStore.edges, canvasStore.nodes);
+		const workflow = {
+			id: canvasStore.workflowId || undefined,
 			name: canvasStore.workflowName,
-			nodes: canvasStore.nodes.map((n) => n.data),
-			connections: {},
+			nodes: workflowNodes,
+			connections,
 			settings: canvasStore.workflowSettings,
-		}, null, 2);
+			tags: canvasStore.workflowTags,
+		};
+		const json = JSON.stringify(workflow, null, 2);
 
 		const blob = new Blob([json], { type: 'application/json' });
 		const url = URL.createObjectURL(blob);
