@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+/* Dark mode using class strategy (Tailwind CSS 4) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* n8n Design Language Color Tokens */
+@theme {
+  --color-primary: #ff6d5a;
+
+  /* Background colors */
+  --color-bg-light: #ffffff;
+  --color-bg-dark: #1a1a2e;
+
+  /* Surface colors */
+  --color-surface-light: #f5f5f5;
+  --color-surface-dark: #252547;
+
+  /* Text colors */
+  --color-text-light: #333333;
+  --color-text-dark: #e0e0e0;
+
+  /* Border colors */
+  --color-border-light: #dbdbdb;
+  --color-border-dark: #3a3a5c;
+
+  /* Status colors */
+  --color-success: #17bf63;
+  --color-error: #ff4757;
+  --color-warning: #ffa502;
+}
+
+/* Base styles */
+html {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+  background-color: var(--color-bg-light);
+  color: var(--color-text-light);
+}
+
+.dark body {
+  background-color: var(--color-bg-dark);
+  color: var(--color-text-dark);
+}

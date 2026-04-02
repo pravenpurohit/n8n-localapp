@@ -25,3 +25,13 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# SvelteKit
+.svelte-kit/
+
+# Tauri
+src-tauri/target/
+
+# Playwright
+playwright-report/
+blob-report/

@@ -1,0 +1,267 @@
+[
+  {
+    "type": "n8n-nodes-base.manualTrigger",
+    "displayName": "Manual Trigger",
+    "icon": "fa:play",
+    "category": "Core",
+    "version": 1,
+    "description": "Runs the flow on clicking a button in n8n",
+    "defaults": { "name": "Manual Trigger", "color": "#909298" },
+    "inputs": [],
+    "outputs": [{ "type": "main" }],
+    "properties": [],
+    "credentials": []
+  },
+  {
+    "type": "n8n-nodes-base.set",
+    "displayName": "Edit Fields (Set)",
+    "icon": "fa:pen",
+    "category": "Core",
+    "version": [3, 3.4],
+    "description": "Modify, add, or remove item fields",
+    "defaults": { "name": "Edit Fields" },
+    "inputs": [{ "type": "main" }],
+    "outputs": [{ "type": "main" }],
+    "properties": [
+      {
+        "displayName": "Mode",
+        "name": "mode",
+        "type": "options",
+        "default": "manual",
+        "options": [
+          { "name": "Manual Mapping", "value": "manual" },
+          { "name": "JSON", "value": "raw" }
+        ]
+      },
+      {
+        "displayName": "Duplicate Item",
+        "name": "duplicateItem",
+        "type": "boolean",
+        "default": false
+      },
+      {
+        "displayName": "Include Other Fields",
+        "name": "includeOtherFields",
+        "type": "boolean",
+        "default": false
+      }
+    ],
+    "credentials": []
+  },
+  {
+    "type": "n8n-nodes-base.executeWorkflow",
+    "displayName": "Execute Workflow",
+    "icon": "fa:network-wired",
+    "category": "Core",
+    "version": [1, 1.2],
+    "description": "Execute another workflow",
+    "defaults": { "name": "Execute Workflow" },
+    "inputs": [{ "type": "main" }],
+    "outputs": [{ "type": "main" }],
+    "properties": [
+      {
+        "displayName": "Workflow ID",
+        "name": "workflowId",
+        "type": "string",
+        "default": "",
+        "required": true,
+        "description": "The workflow to execute"
+      }
+    ],
+    "credentials": []
+  },
+  {
+    "type": "n8n-nodes-base.executeWorkflowTrigger",
+    "displayName": "Execute Workflow Trigger",
+    "icon": "fa:sign-in-alt",
+    "category": "Core",
+    "version": [1, 1.1],
+    "description": "Runs when called by another workflow",
+    "defaults": { "name": "Execute Workflow Trigger" },
+    "inputs": [],
+    "outputs": [{ "type": "main" }],
+    "properties": [],
+    "credentials": []
+  },
+  {
+    "type": "n8n-nodes-base.code",
+    "displayName": "Code",
+    "icon": "fa:code",
+    "category": "Core",
+    "version": 2,
+    "description": "Run custom JavaScript or Python code",
+    "defaults": { "name": "Code" },
+    "inputs": [{ "type": "main" }],
+    "outputs": [{ "type": "main" }],
+    "properties": [
+      {
+        "displayName": "JavaScript Code",
+        "name": "jsCode",
+        "type": "string",
+        "default": "",
+        "typeOptions": { "editor": "code", "language": "javascript", "rows": 10 },
+        "description": "JavaScript code to execute"
+      },
+      {
+        "displayName": "Mode",
+        "name": "mode",
+        "type": "options",
+        "default": "runOnceForAllItems",
+        "options": [
+          { "name": "Run Once for All Items", "value": "runOnceForAllItems" },
+          { "name": "Run Once for Each Item", "value": "runOnceForEachItem" }
+        ]
+      }
+    ],
+    "credentials": []
+  },
+  {
+    "type": "n8n-nodes-base.splitInBatches",
+    "displayName": "Split In Batches",
+    "icon": "fa:th-large",
+    "category": "Flow",
+    "version": 3,
+    "description": "Split data into batches and iterate over each batch",
+    "defaults": { "name": "Split In Batches" },
+    "inputs": [{ "type": "main" }],
+    "outputs": [{ "type": "main" }, { "type": "main", "displayName": "Done" }],
+    "properties": [
+      {
+        "displayName": "Batch Size",
+        "name": "batchSize",
+        "type": "number",
+        "default": 10,
+        "description": "The number of items per batch"
+      }
+    ],
+    "credentials": []
+  },
+  {
+    "type": "n8n-nodes-base.n8nDataTable",
+    "displayName": "n8n Data Table",
+    "icon": "fa:table",
+    "category": "Core",
+    "version": 1,
+    "description": "Read and write data to n8n Data Tables",
+    "defaults": { "name": "n8n Data Table" },
+    "inputs": [{ "type": "main" }],
+    "outputs": [{ "type": "main" }],
+    "properties": [
+      {
+        "displayName": "Resource",
+        "name": "resource",
+        "type": "options",
+        "default": "row",
+        "options": [
+          { "name": "Row", "value": "row" }
+        ]
+      },
+      {
+        "displayName": "Operation",
+        "name": "operation",
+        "type": "options",
+        "default": "get",
+        "options": [
+          { "name": "Get", "value": "get" },
+          { "name": "Upsert", "value": "upsert" },
+          { "name": "Delete", "value": "delete" }
+        ]
+      },
+      {
+        "displayName": "Data Table",
+        "name": "dataTable",
+        "type": "string",
+        "default": "",
+        "required": true
+      }
+    ],
+    "credentials": []
+  },
+  {
+    "type": "@n8n/n8n-nodes-langchain.chainLlm",
+    "displayName": "Basic LLM Chain",
+    "icon": "fa:link",
+    "category": "Advanced AI",
+    "version": [1, 1.4],
+    "description": "A simple chain to prompt a large language model",
+    "defaults": { "name": "Basic LLM Chain" },
+    "inputs": [
+      { "type": "main" },
+      { "type": "ai_languageModel", "displayName": "Language Model", "required": true },
+      { "type": "ai_outputParser", "displayName": "Output Parser" }
+    ],
+    "outputs": [{ "type": "main" }],
+    "properties": [
+      {
+        "displayName": "Prompt Type",
+        "name": "promptType",
+        "type": "options",
+        "default": "define",
+        "options": [
+          { "name": "Define below", "value": "define" },
+          { "name": "Take from previous node", "value": "auto" }
+        ]
+      },
+      {
+        "displayName": "Text",
+        "name": "text",
+        "type": "string",
+        "default": "",
+        "description": "The prompt text to send to the model"
+      },
+      {
+        "displayName": "Has Output Parser",
+        "name": "hasOutputParser",
+        "type": "boolean",
+        "default": false
+      }
+    ],
+    "credentials": []
+  },
+  {
+    "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+    "displayName": "OpenAI Chat Model",
+    "icon": "fa:robot",
+    "category": "Advanced AI",
+    "version": 1,
+    "description": "Access OpenAI chat models like GPT-4",
+    "defaults": { "name": "OpenAI Chat Model" },
+    "inputs": [],
+    "outputs": [{ "type": "ai_languageModel" }],
+    "properties": [
+      {
+        "displayName": "Model",
+        "name": "model",
+        "type": "options",
+        "default": "gpt-4o-mini",
+        "options": [
+          { "name": "GPT-4o", "value": "gpt-4o" },
+          { "name": "GPT-4o Mini", "value": "gpt-4o-mini" },
+          { "name": "GPT-4 Turbo", "value": "gpt-4-turbo" }
+        ]
+      }
+    ],
+    "credentials": [{ "name": "openAiApi", "required": true }]
+  },
+  {
+    "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+    "displayName": "Structured Output Parser",
+    "icon": "fa:project-diagram",
+    "category": "Advanced AI",
+    "version": [1, 1.2],
+    "description": "Parse LLM output into structured JSON using a schema",
+    "defaults": { "name": "Structured Output Parser" },
+    "inputs": [],
+    "outputs": [{ "type": "ai_outputParser" }],
+    "properties": [
+      {
+        "displayName": "JSON Schema Example",
+        "name": "jsonSchemaExample",
+        "type": "json",
+        "default": "{}",
+        "description": "JSON schema or example for the expected output structure"
+      }
+    ],
+    "credentials": []
+  }
+]
