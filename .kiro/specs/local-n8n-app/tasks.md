@@ -537,8 +537,8 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
   - Ensure nodes are clickable and config panel opens
   - Ensure save/activate/deactivate work
 
-- [ ] 14. Executions pages
-  - [ ] 14.1 Implement global executions page
+- [x] 14. Executions pages
+  - [x] 14.1 Implement global executions page
     - Create `src/routes/executions/+page.svelte`
     - Table: workflow name (from cache), started-at, status badge, execution ID
     - Status filter: Any Status, Failed, Cancelled, Running, Success, Waiting
@@ -551,7 +551,7 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Cursor-based pagination
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9_
 
-  - [ ] 14.2 Implement workflow-level executions tab
+  - [x] 14.2 Implement workflow-level executions tab
     - Add Executions tab content to workflow canvas page
     - List previous executions for the specific workflow (GET /executions?workflowId={id})
     - Select past execution → overlay execution data on canvas (input/output per node)
@@ -559,15 +559,15 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - "Re-run" action → re-execute via API
     - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
-- [ ] 15. Credentials management page
-  - [ ] 15.1 Implement credentials list page
+- [x] 15. Credentials management page
+  - [x] 15.1 Implement credentials list page
     - Create `src/routes/credentials/+page.svelte`
     - List all credentials: name, type
     - "Create New Credential" button
     - Cursor-based pagination
     - _Requirements: 7.1, 7.2, 7.9_
 
-  - [ ] 15.2 Implement credential form modal
+  - [x] 15.2 Implement credential form modal
     - Create `src/lib/components/modals/CredentialForm.svelte`
     - Searchable dropdown of credential types
     - On type selection: fetch schema from API → render type-specific fields
@@ -576,8 +576,8 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Delete with confirmation
     - _Requirements: 7.3, 7.4, 7.5, 7.6, 7.7_
 
-- [ ] 16. Templates page
-  - [ ] 16.1 Implement templates browser
+- [x] 16. Templates page
+  - [x] 16.1 Implement templates browser
     - Create `src/routes/templates/+page.svelte`
     - Browsable gallery of templates from n8n.io public API
     - Search input filtering by name/description
@@ -586,8 +586,8 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - "Use This Template" → import as new workflow in canvas editor
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5_
 
-- [ ] 17. Data tables management
-  - [ ] 17.1 Implement data tables list page
+- [x] 17. Data tables management
+  - [x] 17.1 Implement data tables list page
     - Create `src/routes/data-tables/+page.svelte`
     - List all data tables from API
     - "Create Data Table" button → form for name + column schema
@@ -595,7 +595,7 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Cursor-based pagination
     - _Requirements: 24.1, 24.2, 24.6, 24.7_
 
-  - [ ] 17.2 Implement data table row editor
+  - [x] 17.2 Implement data table row editor
     - Create `src/routes/data-tables/[id]/+page.svelte`
     - Spreadsheet-like grid view with column headers
     - Add, edit, delete rows via API
@@ -603,15 +603,15 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Cursor-based pagination for rows
     - _Requirements: 24.3, 24.4, 24.5, 24.7_
 
-- [ ] 18. Settings pages
-  - [ ] 18.1 Implement preferences/theme settings page
+- [x] 18. Settings pages
+  - [x] 18.1 Implement preferences/theme settings page
     - Create `src/routes/settings/preferences/+page.svelte`
     - Theme selector: light, dark, system-default
     - Apply theme immediately on change
     - Display connected n8n instance URL (read-only from .env)
     - _Requirements: 12.1, 12.2, 12.3, 12.4_
 
-  - [ ] 18.2 Implement connection status page
+  - [x] 18.2 Implement connection status page
     - Create `src/routes/settings/connection/+page.svelte`
     - Display N8N_BASE_URL (read-only)
     - Connection status indicator (connected/disconnected)
@@ -619,7 +619,7 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Instructions for updating credentials via .env file
     - _Requirements: 14.1, 14.2, 14.3, 14.4_
 
-  - [ ] 18.3 Implement tags management page
+  - [x] 18.3 Implement tags management page
     - Create `src/routes/settings/tags/+page.svelte`
     - List all tags
     - Create new tag (name input)
@@ -628,20 +628,20 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Cursor-based pagination
     - _Requirements: 23.1, 23.2, 23.3, 23.4, 23.5, 23.6_
 
-  - [ ] 18.4 Implement security audit page
+  - [x] 18.4 Implement security audit page
     - Create `src/routes/settings/audit/+page.svelte`
     - "Run Security Audit" button → POST /audit
     - Display results organized by risk category with descriptions and remediation recommendations
     - _Requirements: 26.1, 26.2, 26.3_
 
-  - [ ] 18.5 Implement settings index page
+  - [x] 18.5 Implement settings index page
     - Create `src/routes/settings/+page.svelte`
     - Links to: Preferences, Connection, Tags, Security Audit
     - Phase 2 settings (Users, LDAP, SAML, Log Streaming, External Secrets, Source Control) shown with lock icon
     - _Requirements: 29.1_
 
-- [ ] 19. Workflow operations
-  - [ ] 19.1 Implement workflow settings modal
+- [x] 19. Workflow operations
+  - [x] 19.1 Implement workflow settings modal
     - Create `src/lib/components/modals/WorkflowSettings.svelte`
     - Execution order selector (v1 recommended, v0 legacy)
     - Error workflow selector dropdown
@@ -653,59 +653,59 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Save → PUT /workflows/{id}
     - _Requirements: 21.1, 21.2, 21.3, 21.4, 21.5, 21.6, 21.7, 21.8, 21.9, 21.10_
 
-  - [ ] 19.2 Implement workflow import/export
+  - [x] 19.2 Implement workflow import/export
     - Create `src/lib/components/modals/ImportExport.svelte`
     - Export: download workflow JSON via Tauri write_file
     - Import: accept JSON file, validate structure via workflow parser, POST /workflows
     - Show validation errors for invalid JSON
     - _Requirements: 25.1, 25.2, 25.3, 25.4, 25.5_
 
-  - [ ] 19.3 Implement workflow delete with confirmation
+  - [x] 19.3 Implement workflow delete with confirmation
     - Add delete action to workflow list (Overview) and workflow editor
     - ConfirmDialog before DELETE /workflows/{id}
     - _Requirements: 37.3_
 
-  - [ ] 19.4 Implement webhook URL display in node config
+  - [x] 19.4 Implement webhook URL display in node config
     - When a Webhook Trigger node is selected, display generated webhook URL
     - Copy-to-clipboard action
     - Show production URL when workflow active, test URL when in test mode
     - _Requirements: 31.1, 31.2, 31.3, 31.4_
 
-- [ ] 20. Error handling and offline behavior
-  - [ ] 20.1 Implement error notification system
+- [x] 20. Error handling and offline behavior
+  - [x] 20.1 Implement error notification system
     - Wire ErrorNotification component into Shell layout
     - Toast stack in bottom-right: severity icon, message, optional retry button
     - Auto-dismiss after 8 seconds (errors persist until manually dismissed)
     - _Requirements: 34.2, 34.3_
 
-  - [ ] 20.2 Implement connection loss detection and retry
+  - [x] 20.2 Implement connection loss detection and retry
     - Wire ConnectionBanner into Shell layout
     - Show banner when connectionStore.status === 'disconnected'
     - Auto-retry every 10 seconds
     - Dismiss banner on reconnection, refresh current view
     - _Requirements: 34.1, 34.5_
 
-  - [ ] 20.3 Implement cached data read-only mode
+  - [x] 20.3 Implement cached data read-only mode
     - When disconnected, allow viewing previously loaded data (workflow list, executions)
     - Disable write operations (save, create, delete) with "offline" indicator
     - _Requirements: 34.4_
 
-  - [ ] 20.4 Implement 401 handling
+  - [x] 20.4 Implement 401 handling
     - On 401 response, show error notification: "Unauthorized — check your API key in .env"
     - _Requirements: 1.5, 34.6_
 
-  - [ ] 20.5 Implement unsaved changes guard
+  - [x] 20.5 Implement unsaved changes guard
     - In workflow canvas page, use SvelteKit `beforeNavigate` hook
     - When canvasStore.isDirty, show ConfirmDialog: "You have unsaved changes. Discard?"
     - _Requirements: 37.4_
 
-  - [ ] 20.6 Implement route-level error pages
+  - [x] 20.6 Implement route-level error pages
     - Create `+error.svelte` pages for route groups
     - User-friendly error message with "Go to Overview" link
     - Global unhandled error handler (window.onerror, window.onunhandledrejection) → log + toast
     - _Requirements: 34 (design §11.4)_
 
-- [ ] 21. Checkpoint — All Phase 1 pages functional
+- [x] 21. Checkpoint — All Phase 1 pages functional
   - Ensure all Phase 1 pages render with live data from n8n API
   - Ensure CRUD operations work for workflows, credentials, tags, data tables
   - Ensure error handling and offline behavior work correctly
