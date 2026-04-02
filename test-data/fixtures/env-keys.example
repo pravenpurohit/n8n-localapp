@@ -1,0 +1,24 @@
+# LLM Provider API Keys for Test Workflows
+# Copy these into your .env file alongside N8N_BASE_URL and N8N_API_KEY.
+#
+# These keys are configured as n8n credentials (not used by the app directly).
+# Create credentials in n8n for each provider you want to test:
+#   - OpenAI API: name it "OpenAI" with your OPENAI_API_KEY
+#   - Google Gemini API: name it "Google Gemini" with your GOOGLE_AI_API_KEY
+#   - Anthropic API: name it "Anthropic" with your ANTHROPIC_API_KEY
+#   - Groq API: name it "Groq" with your GROQ_API_KEY
+#
+# The workflow variants reference these credentials by type, not by key.
+# n8n will prompt you to select the credential when you first open each workflow.
+
+# OpenAI (used by W1/W2 originals — gpt-4o)
+OPENAI_API_KEY=sk-your-openai-key-here
+
+# Google Gemini (used by W1/W2 Gemini variants — gemini-1.5-pro)
+GOOGLE_AI_API_KEY=your-google-ai-key-here
+
+# Anthropic Claude (used by W1/W2 Claude variants — claude-sonnet-4-20250514)
+ANTHROPIC_API_KEY=sk-ant-your-anthropic-key-here
+
+# Groq (used by W1/W2 Groq variants — llama-3.3-70b-versatile)
+GROQ_API_KEY=gsk_your-groq-key-here

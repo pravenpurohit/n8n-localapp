@@ -14,6 +14,7 @@
     "test:visual": "playwright test",
     "test:update-baselines": "playwright test --update-snapshots",
     "update-node-registry": "npx tsx scripts/update-node-registry.ts",
+    "generate-llm-variants": "npx tsx scripts/generate-llm-variants.ts",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build"

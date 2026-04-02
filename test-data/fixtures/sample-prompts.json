@@ -1,0 +1,40 @@
+{
+  "description": "Sample source prompts for testing W0/W1 compilation workflows. Each prompt exercises different compilation strategies (S0-S3).",
+  "prompts": [
+    {
+      "id": "simple-summary",
+      "graphName": "Simple Summary",
+      "sourcePrompt": "Summarize the key features of the Rust programming language in 3 bullet points. Keep it under 100 words.",
+      "expectedStrategy": "S0",
+      "notes": "Trivial single-step task. Should compile to S0 (keep as-is) or S1 (minor cleanup)."
+    },
+    {
+      "id": "research-report",
+      "graphName": "AI Safety Research Report",
+      "sourcePrompt": "Write a 2000-word research report on AI safety alignment techniques. The report must include:\n\n1. Executive Summary (200 words)\n2. Background on the alignment problem\n3. Survey of current approaches:\n   - RLHF (Reinforcement Learning from Human Feedback)\n   - Constitutional AI\n   - Debate and amplification\n   - Mechanistic interpretability\n4. Comparative analysis table of approaches (pros, cons, maturity level)\n5. Recommendations for practitioners\n6. References (at least 5 real papers)\n\nRequirements:\n- Use formal academic tone\n- Each section must cite at least one source\n- The comparative table must have at least 4 rows and 4 columns\n- Do not use filler language or motivational statements\n- Final output must be valid markdown",
+      "expectedStrategy": "S2",
+      "notes": "Multi-section report with citations. Should compile to S2 (sequential) with 4-6 steps."
+    },
+    {
+      "id": "market-analysis",
+      "graphName": "Competitive Market Analysis",
+      "sourcePrompt": "Conduct a competitive analysis of the top 5 cloud database providers (AWS Aurora, Google Cloud Spanner, Azure Cosmos DB, CockroachDB, PlanetScale).\n\nFor each provider, analyze:\n- Pricing model and cost at 1TB/10TB/100TB\n- Performance benchmarks (read/write latency, throughput)\n- Global distribution capabilities\n- Developer experience (SDK quality, documentation, community)\n- Enterprise features (compliance, SLAs, support tiers)\n\nThen produce:\n1. Individual provider profiles (500 words each)\n2. Head-to-head comparison matrix\n3. Decision framework: which provider for which use case\n4. Risk assessment for each provider (vendor lock-in, pricing changes, technology obsolescence)\n\nConstraints:\n- All claims must be verifiable\n- Pricing must be current as of 2024\n- Include at least 3 real benchmark sources\n- Output as structured markdown with tables",
+      "expectedStrategy": "S3",
+      "notes": "Fan-out analysis (5 providers independently) then fan-in comparison. Should compile to S3."
+    },
+    {
+      "id": "code-review",
+      "graphName": "Code Review Checklist",
+      "sourcePrompt": "Create a comprehensive code review checklist for a TypeScript + React project. Include sections for: code quality, performance, security, accessibility, testing, and documentation. Each section should have 5-10 specific items to check. Format as markdown with checkboxes.",
+      "expectedStrategy": "S1",
+      "notes": "Single well-defined task that benefits from prompt improvement. Should compile to S1."
+    },
+    {
+      "id": "minimal-task",
+      "graphName": "Echo Test",
+      "sourcePrompt": "Return the text 'hello world' in a JSON object with key 'message'.",
+      "expectedStrategy": "S0",
+      "notes": "Absolute minimal task for smoke testing. Verifies the pipeline works end-to-end."
+    }
+  ]
+}

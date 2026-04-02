@@ -1,0 +1,50 @@
+{
+  "description": "Data table schemas that must exist in the n8n instance for the workflows to run. Create these via the n8n UI or API before executing workflows.",
+  "tables": [
+    {
+      "name": "compiled_graphs",
+      "description": "Stores compiled prompt graph manifests (written by W1)",
+      "columns": [
+        { "name": "graph_id", "type": "string", "description": "Unique graph identifier" },
+        { "name": "graph_name", "type": "string", "description": "Human-readable graph name" },
+        { "name": "source_prompt", "type": "string", "description": "Original source prompt text" },
+        { "name": "manifest_json", "type": "string", "description": "Full compiled manifest as JSON string" },
+        { "name": "strategy_mode", "type": "string", "description": "Compilation strategy: S0, S1, S2, or S3" },
+        { "name": "prompt_count", "type": "number", "description": "Number of prompts in the graph" },
+        { "name": "compiled_at", "type": "string", "description": "ISO 8601 compilation timestamp" }
+      ]
+    },
+    {
+      "name": "step_results",
+      "description": "Stores individual step execution results (written by W2)",
+      "columns": [
+        { "name": "result_key", "type": "string", "description": "Composite key: runId::stepId" },
+        { "name": "run_id", "type": "string", "description": "Execution run identifier" },
+        { "name": "graph_id", "type": "string", "description": "Parent graph identifier" },
+        { "name": "graph_name", "type": "string", "description": "Parent graph name" },
+        { "name": "step_id", "type": "string", "description": "Step identifier (e.g. P1, P2, P_FINAL)" },
+        { "name": "step_name", "type": "string", "description": "Human-readable step name" },
+        { "name": "status", "type": "string", "description": "ok or blocked" },
+        { "name": "quality_gate_pass", "type": "boolean", "description": "Whether quality gate passed" },
+        { "name": "output_json", "type": "string", "description": "Full step output as JSON string" },
+        { "name": "markdown_output", "type": "string", "description": "Rendered markdown output" },
+        { "name": "completed_at", "type": "string", "description": "ISO 8601 completion timestamp" }
+      ]
+    },
+    {
+      "name": "run_results",
+      "description": "Stores overall run status and final output (written by W3)",
+      "columns": [
+        { "name": "run_id", "type": "string", "description": "Execution run identifier" },
+        { "name": "graph_id", "type": "string", "description": "Graph that was executed" },
+        { "name": "graph_name", "type": "string", "description": "Graph name" },
+        { "name": "status", "type": "string", "description": "completed, failed, or partial" },
+        { "name": "steps_completed", "type": "number", "description": "Number of steps that finished" },
+        { "name": "steps_total", "type": "number", "description": "Total steps in the graph" },
+        { "name": "final_output", "type": "string", "description": "Final assembled document (markdown)" },
+        { "name": "started_at", "type": "string", "description": "ISO 8601 run start timestamp" },
+        { "name": "completed_at", "type": "string", "description": "ISO 8601 run completion timestamp" }
+      ]
+    }
+  ]
+}

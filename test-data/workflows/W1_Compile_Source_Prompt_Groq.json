@@ -1,0 +1,316 @@
+{
+  "name": "W1_Compile_Source_Prompt_Groq",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "w1q-n1",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "duplicateItem": false,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "graphName",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "sourcePrompt",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "w1q-n2",
+      "name": "Input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        250,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const graphId = `graph-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;\nconst compiledAt = new Date().toISOString();\n\nconst compileSystemPrompt = `\nYou are a prompt-graph compiler for n8n.\n\nYou are NOT executing the source task itself.\nYou are converting one overloaded source prompt into the minimum reliable execution graph.\n\nHard rules:\n1. Choose the smallest valid strategy mode:\n   - S0 = keep as one cleaned prompt\n   - S1 = compress into one improved prompt\n   - S2 = sequential prompt graph\n   - S3 = fan-out / fan-in prompt graph\n2. Do not decompose unless it materially reduces omission risk, hallucination risk, or task confusion.\n3. Preserve all material constraints from the source prompt:\n   - objective\n   - non-negotiables\n   - deliverables\n   - evaluation rules\n   - output format\n   - source/citation requirements\n4. Replace dangling references with explicit instructions where possible.\n5. Every step must have:\n   - one primary purpose\n   - explicit dependencies\n   - explicit required inputs\n   - explicit output labels\n   - explicit quality gate\n   - explicit stop condition\n6. Any fan-out must eventually converge through an aggregate step.\n7. Always include a final recombination step with:\n   - id = P_FINAL\n   - execution_mode = recombine\n   - task_instructions that include the exact sentence:\n     \"Do not regenerate analysis. Assemble, sequence, deduplicate, and format only.\"\n8. Internal execution must be generic. Do not create custom output schemas per step.\n9. The output will be executed by a generic step executor in n8n.\n10. Return ONLY JSON matching the provided schema.\n\nHow to think:\n- First identify the source prompt's objective, constraints, deliverables, and evaluation logic.\n- Then decide if one improved prompt is enough.\n- If not, create the minimum prompt graph.\n- Minimize prompt count.\n- Preserve requirement coverage.\n- Make the graph directly executable inside n8n.\n\nImportant:\n- Each step's required_output_labels must be the exact section labels that step must produce.\n- The final recombination step must output the final document in the correct order.\n- Do not omit material requirements.\n`.trim();\n\nconst compileUserPrompt = `\nGRAPH NAME\n${$json.graphName}\n\nSOURCE PROMPT\n${$json.sourcePrompt}\n\nReturn only JSON matching the required schema.\n`.trim();\n\nreturn [{\n  json: {\n    graphId,\n    graphName: $json.graphName,\n    sourcePrompt: $json.sourcePrompt,\n    compiledAt,\n    compileSystemPrompt,\n    compileUserPrompt\n  }\n}];",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "w1q-n3",
+      "name": "Build Compile Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.compileUserPrompt }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "={{ $json.compileSystemPrompt }}",
+              "type": "systemMessage"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "w1q-n4",
+      "name": "Compile Prompt Graph",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        800,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"type\": \"object\", \"properties\": {\"strategy_mode\": {\"type\": \"string\", \"enum\": [\"S0\", \"S1\", \"S2\", \"S3\"]}, \"strategy_reason\": {\"type\": \"string\"}, \"graph_name\": {\"type\": \"string\"}, \"prompts\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\"}, \"name\": {\"type\": \"string\"}, \"purpose\": {\"type\": \"string\"}, \"kind\": {\"type\": \"string\", \"enum\": [\"extract\", \"research\", \"evaluate\", \"generate\", \"aggregate\", \"recombine\"]}, \"execution_mode\": {\"type\": \"string\", \"enum\": [\"single\", \"sequential\", \"fan_out\", \"fan_in\", \"recombine\"]}, \"compute\": {\"type\": \"string\", \"enum\": [\"light\", \"medium\", \"heavy\"]}, \"depends_on\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}}, \"inputs_required\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}}, \"inputs_to_attach\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}}, \"inputs_to_summarize\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}}, \"task_instructions\": {\"type\": \"string\"}, \"required_output_labels\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}}, \"quality_gate\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}}, \"stop_condition\": {\"type\": \"string\"}}, \"required\": [\"id\", \"name\", \"purpose\", \"kind\", \"execution_mode\", \"compute\", \"depends_on\", \"inputs_required\", \"inputs_to_attach\", \"inputs_to_summarize\", \"task_instructions\", \"required_output_labels\", \"quality_gate\", \"stop_condition\"]}}, \"final_document_order\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}}, \"execution_notes\": {\"type\": \"string\"}}, \"required\": [\"strategy_mode\", \"strategy_reason\", \"graph_name\", \"prompts\", \"final_document_order\", \"execution_notes\"]}"
+      },
+      "id": "w1q-n5",
+      "name": "Compile Manifest Schema",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        650,
+        250
+      ]
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "id": "w1q-n6",
+      "name": "Chat Model (Groq)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        650,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json;\nlet normalized = raw;\n\nif (raw.output && typeof raw.output === 'object' && !Array.isArray(raw.output)) {\n  normalized = raw.output;\n} else if (raw.response && typeof raw.response === 'object' && !Array.isArray(raw.response)) {\n  normalized = raw.response;\n} else if (raw.text && typeof raw.text === 'string') {\n  try {\n    normalized = JSON.parse(raw.text);\n  } catch (e) {\n    throw new Error(`Model returned unparseable compile output: ${raw.text.slice(0, 1000)}`);\n  }\n}\n\nreturn [{\n  json: {\n    ...normalized,\n    graph_id: $('Build Compile Request').first().json.graphId,\n    graph_name: $('Build Compile Request').first().json.graphName,\n    source_prompt: $('Build Compile Request').first().json.sourcePrompt,\n    compiled_at: $('Build Compile Request').first().json.compiledAt\n  }\n}];",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "w1q-n7",
+      "name": "Normalize Compile Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const manifest = { ...$json };\nconst prompts = manifest.prompts || [];\n\nif (!Array.isArray(prompts) || prompts.length === 0) {\n  throw new Error('Manifest contains no prompts');\n}\n\nconst idSet = new Set();\nconst promptById = {};\n\nfor (const p of prompts) {\n  if (!p.id) throw new Error('A prompt is missing id');\n  if (idSet.has(p.id)) throw new Error(`Duplicate prompt id: ${p.id}`);\n  idSet.add(p.id);\n  promptById[p.id] = p;\n}\n\nfor (const p of prompts) {\n  for (const dep of (p.depends_on || [])) {\n    if (!idSet.has(dep)) {\n      throw new Error(`Prompt ${p.id} references unknown dependency ${dep}`);\n    }\n  }\n}\n\nconst recombineSteps = prompts.filter(p => p.execution_mode === 'recombine');\nif (recombineSteps.length !== 1) {\n  throw new Error(`Manifest must contain exactly one recombination prompt. Found ${recombineSteps.length}`);\n}\nif (recombineSteps[0].id !== 'P_FINAL') {\n  throw new Error(`Recombination prompt must use id P_FINAL`);\n}\n\nconst indegree = {};\nconst edges = {};\n\nfor (const p of prompts) {\n  indegree[p.id] = (p.depends_on || []).length;\n  edges[p.id] = [];\n}\n\nfor (const p of prompts) {\n  for (const dep of (p.depends_on || [])) {\n    edges[dep].push(p.id);\n  }\n}\n\nlet queue = prompts\n  .filter(p => indegree[p.id] === 0)\n  .map(p => p.id)\n  .sort();\n\nconst execution_order = [];\n\nwhile (queue.length) {\n  const id = queue.shift();\n  execution_order.push(promptById[id]);\n\n  for (const next of edges[id]) {\n    indegree[next] -= 1;\n    if (indegree[next] === 0) {\n      queue.push(next);\n      queue.sort();\n    }\n  }\n}\n\nif (execution_order.length !== prompts.length) {\n  throw new Error('Cycle detected in prompt graph');\n}\n\nreturn [{\n  json: {\n    ...manifest,\n    prompt_count: prompts.length,\n    execution_order\n  }\n}];",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "w1q-n8",
+      "name": "Validate Manifest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1400,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTable": "compiled_graphs",
+        "matchingColumns": [
+          "graph_id"
+        ],
+        "columns": {
+          "mappingMode": "defineBelow",
+          "values": [
+            {
+              "column": "graph_id",
+              "value": "={{ $json.graph_id }}"
+            },
+            {
+              "column": "graph_name",
+              "value": "={{ $json.graph_name }}"
+            },
+            {
+              "column": "source_prompt",
+              "value": "={{ $json.source_prompt }}"
+            },
+            {
+              "column": "manifest_json",
+              "value": "={{ JSON.stringify($json) }}"
+            },
+            {
+              "column": "strategy_mode",
+              "value": "={{ $json.strategy_mode }}"
+            },
+            {
+              "column": "prompt_count",
+              "value": "={{ $json.prompt_count }}"
+            },
+            {
+              "column": "compiled_at",
+              "value": "={{ $json.compiled_at }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "w1q-n9",
+      "name": "Upsert Compiled Graph",
+      "type": "n8n-nodes-base.n8nDataTable",
+      "typeVersion": 1,
+      "position": [
+        1700,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: $('Validate Manifest').first().json\n}];",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "w1q-n10",
+      "name": "Return Graph",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input": {
+      "main": [
+        [
+          {
+            "node": "Build Compile Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Compile Request": {
+      "main": [
+        [
+          {
+            "node": "Compile Prompt Graph",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compile Prompt Graph": {
+      "main": [
+        [
+          {
+            "node": "Normalize Compile Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compile Manifest Schema": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Compile Prompt Graph",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Compile Output": {
+      "main": [
+        [
+          {
+            "node": "Validate Manifest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Manifest": {
+      "main": [
+        [
+          {
+            "node": "Upsert Compiled Graph",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Compiled Graph": {
+      "main": [
+        [
+          {
+            "node": "Return Graph",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Model (Groq)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Compile Prompt Graph",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "instanceId": ""
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "description": "Pre-built step execution inputs for testing W2 directly (without running W1 first). Each entry simulates what W3 would pass to W2.",
+  "steps": [
+    {
+      "id": "extract-step",
+      "description": "A simple extraction step with no dependencies",
+      "input": {
+        "runId": "test-run-001",
+        "graphId": "test-graph-001",
+        "graphName": "AI Safety Research Report",
+        "sourcePrompt": "Write a research report on AI safety alignment techniques.",
+        "step": {
+          "id": "P1",
+          "name": "Extract Requirements",
+          "purpose": "Identify all explicit and implicit requirements from the source prompt",
+          "kind": "extract",
+          "execution_mode": "single",
+          "compute": "light",
+          "depends_on": [],
+          "inputs_required": ["sourcePrompt"],
+          "inputs_to_attach": [],
+          "inputs_to_summarize": [],
+          "task_instructions": "Read the source prompt carefully. List every explicit requirement (stated directly) and every implicit requirement (implied by context). Output as structured sections.",
+          "required_output_labels": ["explicit_requirements", "implicit_requirements", "constraints"],
+          "quality_gate": ["All stated requirements captured", "No invented requirements"],
+          "stop_condition": "All requirements identified and categorized"
+        }
+      }
+    },
+    {
+      "id": "research-step",
+      "description": "A research step that depends on the extraction step",
+      "input": {
+        "runId": "test-run-001",
+        "graphId": "test-graph-001",
+        "graphName": "AI Safety Research Report",
+        "sourcePrompt": "Write a research report on AI safety alignment techniques.",
+        "step": {
+          "id": "P2",
+          "name": "Research RLHF",
+          "purpose": "Research Reinforcement Learning from Human Feedback approach",
+          "kind": "research",
+          "execution_mode": "single",
+          "compute": "medium",
+          "depends_on": ["P1"],
+          "inputs_required": ["explicit_requirements"],
+          "inputs_to_attach": ["P1"],
+          "inputs_to_summarize": [],
+          "task_instructions": "Research RLHF as an AI alignment technique. Cover: definition, how it works, key papers (Christiano et al. 2017, Ouyang et al. 2022), strengths, weaknesses, current applications. Cite real sources.",
+          "required_output_labels": ["rlhf_overview", "key_papers", "strengths_weaknesses"],
+          "quality_gate": ["At least 2 real paper citations", "Technical accuracy"],
+          "stop_condition": "RLHF section complete with citations"
+        }
+      }
+    },
+    {
+      "id": "recombine-step",
+      "description": "The final recombination step (P_FINAL)",
+      "input": {
+        "runId": "test-run-001",
+        "graphId": "test-graph-001",
+        "graphName": "AI Safety Research Report",
+        "sourcePrompt": "Write a research report on AI safety alignment techniques.",
+        "step": {
+          "id": "P_FINAL",
+          "name": "Assemble Final Report",
+          "purpose": "Combine all step outputs into the final document",
+          "kind": "recombine",
+          "execution_mode": "recombine",
+          "compute": "medium",
+          "depends_on": ["P1", "P2"],
+          "inputs_required": ["all prior step outputs"],
+          "inputs_to_attach": ["P1", "P2"],
+          "inputs_to_summarize": [],
+          "task_instructions": "Do not regenerate analysis. Assemble, sequence, deduplicate, and format only. Combine all upstream step outputs into a coherent markdown document following the final_document_order.",
+          "required_output_labels": ["executive_summary", "background", "rlhf_overview", "recommendations"],
+          "quality_gate": ["All sections present", "No regenerated content", "Valid markdown"],
+          "stop_condition": "Final document assembled"
+        }
+      }
+    }
+  ]
+}

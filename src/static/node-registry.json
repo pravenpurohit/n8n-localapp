@@ -244,6 +244,81 @@
     "credentials": [{ "name": "openAiApi", "required": true }]
   },
   {
+    "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+    "displayName": "Google Gemini Chat Model",
+    "icon": "fa:robot",
+    "category": "Advanced AI",
+    "version": 1,
+    "description": "Access Google Gemini models",
+    "defaults": { "name": "Google Gemini Chat Model" },
+    "inputs": [],
+    "outputs": [{ "type": "ai_languageModel" }],
+    "properties": [
+      {
+        "displayName": "Model Name",
+        "name": "modelName",
+        "type": "options",
+        "default": "models/gemini-1.5-pro",
+        "options": [
+          { "name": "Gemini 1.5 Pro", "value": "models/gemini-1.5-pro" },
+          { "name": "Gemini 1.5 Flash", "value": "models/gemini-1.5-flash" },
+          { "name": "Gemini 2.0 Flash", "value": "models/gemini-2.0-flash" }
+        ]
+      }
+    ],
+    "credentials": [{ "name": "googleGeminiApi", "required": true }]
+  },
+  {
+    "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+    "displayName": "Anthropic Chat Model",
+    "icon": "fa:robot",
+    "category": "Advanced AI",
+    "version": 1,
+    "description": "Access Anthropic Claude models",
+    "defaults": { "name": "Anthropic Chat Model" },
+    "inputs": [],
+    "outputs": [{ "type": "ai_languageModel" }],
+    "properties": [
+      {
+        "displayName": "Model",
+        "name": "model",
+        "type": "options",
+        "default": "claude-sonnet-4-20250514",
+        "options": [
+          { "name": "Claude Sonnet 4", "value": "claude-sonnet-4-20250514" },
+          { "name": "Claude Haiku 3.5", "value": "claude-3-5-haiku-20241022" },
+          { "name": "Claude Opus 4", "value": "claude-opus-4-20250514" }
+        ]
+      }
+    ],
+    "credentials": [{ "name": "anthropicApi", "required": true }]
+  },
+  {
+    "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+    "displayName": "Groq Chat Model",
+    "icon": "fa:robot",
+    "category": "Advanced AI",
+    "version": 1,
+    "description": "Access Groq-hosted models (Llama, Mixtral)",
+    "defaults": { "name": "Groq Chat Model" },
+    "inputs": [],
+    "outputs": [{ "type": "ai_languageModel" }],
+    "properties": [
+      {
+        "displayName": "Model",
+        "name": "model",
+        "type": "options",
+        "default": "llama-3.3-70b-versatile",
+        "options": [
+          { "name": "Llama 3.3 70B", "value": "llama-3.3-70b-versatile" },
+          { "name": "Llama 3.1 8B", "value": "llama-3.1-8b-instant" },
+          { "name": "Mixtral 8x7B", "value": "mixtral-8x7b-32768" }
+        ]
+      }
+    ],
+    "credentials": [{ "name": "groqApi", "required": true }]
+  },
+  {
     "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
     "displayName": "Structured Output Parser",
     "icon": "fa:project-diagram",
