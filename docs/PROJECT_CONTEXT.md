@@ -36,129 +36,129 @@ Built with Tauri 2 (Rust backend + system webview), Svelte 5 with SvelteKit, Sve
 └─────────────────────────────────────────────────┘
 ```
 
-All HTTP requests to n8n go through the Rust backend, which validates URLs against an allowlist and injects the API key. The frontend never holds the API key directly. Templates (n8n.io public API) use direct `fetch()` since they don't need auth.
-
 ## Directory Structure
 
 ```
 src/
 ├── lib/
-│   ├── api/              # API client + 7 domain modules (workflows, executions,
-│   │                     #   credentials, tags, data-tables, templates, audit)
-│   ├── core/             # Business logic (workflow parser, expression parser,
-│   │                     #   node registry, connection resolver, logger)
-│   ├── stores/           # 11 Svelte 5 rune-based stores (app, canvas, connection,
-│   │                     #   workflows, executions, credentials, tags, data-tables,
-│   │                     #   theme, node-panel) + flow-mapping utility
-│   ├── components/
-│   │   ├── canvas/       # Svelte Flow: WorkflowCanvas, CustomNode, TriggerNode,
-│   │   │                 #   ClusterNode, CustomEdge, StickyNote, NodeSelector, Controls
-│   │   ├── common/       # SearchInput, StatusBadge, TagPill, LoadMore, ConfirmDialog,
-│   │   │                 #   ErrorNotification, ConnectionBanner, DataTable, EnterpriseStub
-│   │   ├── layout/       # Shell, Sidebar, TopBar
-│   │   ├── modals/       # WorkflowSettings, ImportExport, CredentialForm
-│   │   └── panels/       # NodeConfigPanel, ParametersTab, SettingsTab,
-│   │                     #   InputOutputTab, ExpressionEditor, CodeEditor
-│   ├── types/            # TypeScript interfaces (workflow, execution, credential,
-│   │                     #   node-registry, api)
-│   └── utils/            # Pagination helper, workflow name cache, date/number formatting
-├── routes/               # SvelteKit pages
-│   ├── overview/         # Home page with workflows/credentials/executions tabs
-│   ├── workflows/[id]/   # Canvas editor for existing workflow
-│   ├── workflows/new/    # New workflow canvas
-│   ├── executions/       # Global executions list with filters
-│   ├── credentials/      # Credentials management
-│   ├── templates/        # n8n.io template browser
-│   ├── data-tables/      # Data tables list + [id] row editor
-│   ├── settings/         # Preferences, connection, tags, audit + Phase 2 stubs
-│   ├── insights/         # Phase 2 stub
-│   ├── projects/         # Phase 2 stub
-│   └── error/            # .env configuration error screen
-└── static/
-    └── node-registry.json  # Bundled node type definitions (10 types)
+│   ├── api/              # API client + 7 domain modules
+│   ├── core/             # Business logic (parsers, registry, logger)
+│   ├── stores/           # 11 Svelte 5 rune-based stores + flow-mapping
+│   ├── components/       # canvas/, common/, layout/, modals/, panels/
+│   ├── types/            # TypeScript interfaces
+│   └── utils/            # Pagination, cache, formatting
+├── routes/               # SvelteKit pages (overview, workflows, executions, etc.)
+└── static/               # Bundled node registry JSON (14 node types)
 
-src-tauri/
-├── src/
-│   ├── main.rs           # Entry point
-│   ├── lib.rs            # Command registration + AllowedBaseUrl state
-│   └── commands/
-│       ├── http.rs       # HTTP proxy with URL allowlist
-│       ├── env.rs        # .env config reader
-│       └── fs.rs         # Filesystem (log, read, write with path validation)
-├── Cargo.toml
-└── capabilities/default.json
+src-tauri/src/            # Rust backend (HTTP proxy, .env reader, filesystem)
 
-scripts/
-└── update-node-registry.ts  # Fetches node types from running n8n instance
-
+tests/e2e/                # Playwright E2E tests (6 spec files)
 test-data/
-└── workflows/            # 4 test workflow JSON files (orchestrator, AI compiler,
-                          #   step executor, graph runner)
+├── workflows/            # 10 workflow JSON files (4 base + 6 LLM variants)
+└── fixtures/             # 8 sample prompts, step inputs, data table schemas, API key template
 
-docs/
-├── PROJECT_CONTEXT.md    # This file
-├── TECH_STACK.md         # Technology stack decisions and rationale
-└── mock-screens/         # 33 ASCII wireframe mockups of all screens
+scripts/                  # update-node-registry.ts, generate-llm-variants.ts
+docs/                     # PROJECT_CONTEXT, TECH_STACK, mock-screens/
 ```
 
-## Requirements & Spec
+## Test Data
 
-The full spec lives in `.kiro/specs/local-n8n-app/`:
-- `requirements.md` — 46 requirements across 3 phases
-- `design.md` — Full technical design (architecture, components, data models, API design)
-- `tasks.md` — Implementation task list (27 top-level tasks, all Phase 1 required tasks complete)
+### Workflow Files (test-data/workflows/)
+10 workflow JSON files covering 4 LLM providers:
 
-### Phase 1 (implemented): Core features using n8n public API
-Workflow CRUD, canvas editor with Svelte Flow, execution management, credentials, templates, data tables, tags, settings, theme, error handling, offline detection.
+| Base Workflow | OpenAI | Gemini | Claude | Groq |
+|--------------|--------|--------|--------|------|
+| W0 Orchestrator | ✓ (no LLM) | — | — | — |
+| W1 AI Compiler | ✓ gpt-4o | ✓ gemini-1.5-pro | ✓ claude-sonnet-4 | ✓ llama-3.3-70b |
+| W2 Step Executor | ✓ gpt-4o | ✓ gemini-1.5-pro | ✓ claude-sonnet-4 | ✓ llama-3.3-70b |
+| W3 Graph Runner | ✓ (no LLM) | — | — | — |
 
-### Phase 2 (stubs): Enterprise features requiring license
-Variables, Insights, Projects, Users, LDAP, SAML/SSO, Log Streaming, External Secrets, Source Control, Workflow History, Sharing, AI Assistant. All render as "Enterprise feature" placeholder pages.
+### Sample Prompts (test-data/fixtures/sample-prompts.json)
+8 prompts exercising all compilation strategies:
 
-### Phase 3 (deferred): Features requiring internal REST API session auth
-User profile, API key management, community nodes.
+| ID | Strategy | Complexity |
+|----|----------|-----------|
+| simple-summary | S0 | Trivial single-step |
+| code-review | S1 | Single task, prompt improvement |
+| research-report | S2 | Sequential multi-section |
+| market-analysis | S3 | Fan-out (5 providers) + fan-in |
+| minimal-task | S0 | Smoke test |
+| full-stress-test | S3 | 10-section monolithic report |
+| production-business-diligence | S3 | 4-stage linear pipeline |
+| production-business-diligence-6stage | S3 | 6-stage diamond dependency pipeline |
 
-## Key Design Decisions
+### Other Fixtures
+- `sample-step-inputs.json` — Pre-built W2 inputs (bypass W1)
+- `expected-data-tables.json` — 3 data table schemas needed by workflows
+- `env-keys.example` — API key template for 4 LLM providers
 
-| Decision | Choice | Why |
-|----------|--------|-----|
-| API proxy | Tauri Rust commands | Bypasses CORS; API key never in webview JS |
-| State | Svelte 5 runes ($state, $derived) | No external state lib needed |
-| Canvas | @xyflow/svelte (Svelte Flow) | Native Svelte 5; same engine as React Flow |
-| Styling | Tailwind CSS 4 | Utility-first; dark/light themes via `dark:` class |
-| Node registry | Bundled static JSON + runtime fetch | Works offline; updatable via script |
-| Templates API | Direct fetch (not Rust proxy) | Public API, no auth needed |
+## Testing
+
+### Unit Tests (58 tests, Vitest)
+```bash
+npm test
+```
+Covers: workflow parser, expression parser, connection resolver, API client, logger, format utils.
+
+### E2E Visual Tests (Playwright, headed)
+```bash
+npm run test:visual
+```
+6 spec files:
+1. `01-app-shell` — Sidebar, navigation, theme toggle, Phase 2 stubs
+2. `02-overview` — Tabs, workflow list, search, pagination
+3. `03-canvas` — Workflow rendering, node selection, node selector panel
+4. `04-all-workflows` — Import and render all 10 workflow variants
+5. `05-pages` — Screenshot every page (20+ routes)
+6. `06-error-states` — Invalid routes, missing workflows
+
+### Prerequisites for E2E Tests
+1. n8n running on localhost:5678 (`npx n8n`)
+2. `.env` configured with N8N_BASE_URL, N8N_API_KEY
+3. LLM API keys in `.env` (OPENAI_API_KEY, GOOGLE_AI_API_KEY, ANTHROPIC_API_KEY, GROQ_API_KEY)
+4. LLM credentials created in n8n (one per provider)
+5. 3 data tables created in n8n: `compiled_graphs`, `step_results`, `run_results`
+
+### Self-Healing Test Loop
+When running E2E tests in self-healing mode:
+1. Run `npm run test:visual` (headed, screenshots on)
+2. Check `test-results/screenshots/` for visual output
+3. Check `test-results/visual-report/` for HTML report
+4. Debug failures using screenshots + debug.log
+5. Fix source code, re-run
+6. Repeat until all tests pass
 
 ## How to Run
 
 ```bash
-# Prerequisites: Node.js, Rust toolchain, a running n8n instance
-
 # 1. Configure
 cp .env.example .env
-# Edit .env with your N8N_BASE_URL and N8N_API_KEY
+# Add N8N_BASE_URL, N8N_API_KEY, and LLM provider keys
 
 # 2. Install
 npm install
+npx playwright install chromium
 
-# 3. Start n8n (if not already running)
+# 3. Start n8n
 npx n8n
 
-# 4. Run the app
+# 4. Run the app (for Tauri desktop)
 npm run tauri dev
 
-# 5. Run tests
-npm test              # 58 unit tests (Vitest)
-npm run test:visual   # E2E visual tests (Playwright)
+# 5. Run unit tests
+npm test
+
+# 6. Run E2E tests (headed, against SvelteKit dev server)
+npm run test:visual
 ```
 
-## Testing
+## Requirements & Spec
 
-58 unit tests cover the core modules:
-- Workflow parser (parse, serialize, validation, edge cases)
-- Expression parser (all 6 expression types, recursive extraction)
-- Connection resolver (validation, type detection, AI connection types)
-- API client (header construction, error handling, pagination)
-- Logger (level filtering, structured output)
-- Format utilities (relative time, absolute time, duration)
+Full spec in `.kiro/specs/local-n8n-app/`:
+- `requirements.md` — 46 requirements across 3 phases
+- `design.md` — Full technical design
+- `tasks.md` — Implementation task list (all Phase 1 required tasks complete)
 
-Tests use a mock Tauri invoke setup (`src/lib/test/setup.ts`) that intercepts `@tauri-apps/api/core` calls.
+### Phase 1 (implemented): Core features using n8n public API
+### Phase 2 (stubs): Enterprise features (12 placeholder pages)
+### Phase 3 (deferred): Features requiring internal REST API session auth
