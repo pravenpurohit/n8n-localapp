@@ -222,7 +222,7 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
   - Ensure all TypeScript compiles without errors
   - Ensure `npm test` passes for core module tests
 
-- [-] 7. Svelte 5 rune-based stores
+- [x] 7. Svelte 5 rune-based stores
   - [x] 7.1 Implement theme store
     - Create `src/lib/stores/theme.svelte.ts` per design §10.1
     - ThemeStore class with $state theme ('light'|'dark'|'system'), $derived resolvedTheme
@@ -230,7 +230,7 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Listen to `prefers-color-scheme` media query for system theme
     - _Requirements: 12.1, 12.2, 12.3_
 
-  - [ ] 7.2 Implement connection status store
+  - [x] 7.2 Implement connection status store
     - Create `src/lib/stores/connection.svelte.ts` per design §7.2
     - ConnectionStore class with $state status, lastSuccessfulCheck, retryCount
     - $derived isConnected
@@ -239,43 +239,43 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - `stopRetry()` on reconnection
     - _Requirements: 14.2, 14.3, 34.1, 34.5_
 
-  - [ ] 7.3 Implement app state store
+  - [x] 7.3 Implement app state store
     - Create `src/lib/stores/app.svelte.ts`
     - AppStore class with $state config (AppConfig), $state initialized, $state debug
     - `initialize()` — read env config, init API client, check connection, init node registry, set debug flag on logger
     - _Requirements: 1.1, 1.3, 40.1_
 
-  - [ ] 7.4 Implement workflow list store
+  - [x] 7.4 Implement workflow list store
     - Create `src/lib/stores/workflows.svelte.ts`
     - Use PaginatedList<Workflow> for paginated workflow fetching
     - $state searchQuery, $state selectedTags for filtering
     - $derived filteredWorkflows (client-side filter by search + tags)
     - _Requirements: 2.1, 2.2, 2.5, 2.8_
 
-  - [ ] 7.5 Implement executions store
+  - [x] 7.5 Implement executions store
     - Create `src/lib/stores/executions.svelte.ts`
     - Use PaginatedList<Execution> for paginated execution fetching
     - $state statusFilter, workflowFilter, dateRangeFilter
     - Resolve workflow names via workflowNameCache
     - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
-  - [ ] 7.6 Implement credentials store
+  - [x] 7.6 Implement credentials store
     - Create `src/lib/stores/credentials.svelte.ts`
     - Use PaginatedList<Credential> for paginated credential fetching
     - _Requirements: 7.1, 7.9_
 
-  - [ ] 7.7 Implement tags store
+  - [x] 7.7 Implement tags store
     - Create `src/lib/stores/tags.svelte.ts`
     - $state tags array, CRUD operations via tags API
     - _Requirements: 23.1, 23.2, 23.3, 23.6_
 
-  - [ ] 7.8 Implement data tables store
+  - [x] 7.8 Implement data tables store
     - Create `src/lib/stores/data-tables.svelte.ts`
     - Use PaginatedList<DataTable> for table list
     - Row management with pagination for individual table views
     - _Requirements: 24.1, 24.7_
 
-  - [ ] 7.9 Implement canvas store
+  - [x] 7.9 Implement canvas store
     - Create `src/lib/stores/canvas.svelte.ts` per design §4.3
     - CanvasStore class with $state nodes, edges, selectedNodeId, workflowId, workflowName, workflowActive, workflowTags, workflowSettings, isDirty, executionStatus
     - $derived selectedNode
@@ -285,12 +285,12 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - `addNode()`, `removeNode()`, `addEdge()`, `removeEdge()`, `addStickyNote()`
     - _Requirements: 3.1, 3.5, 3.9, 36.1, 36.2, 37.2_
 
-  - [ ] 7.10 Implement node panel store
+  - [x] 7.10 Implement node panel store
     - Create `src/lib/stores/node-panel.svelte.ts`
     - $state selectedNode, activeTab ('parameters'|'settings'|'input'|'output')
     - _Requirements: 4.1_
 
-  - [ ] 7.11 Implement Svelte Flow node/edge mapping functions
+  - [x] 7.11 Implement Svelte Flow node/edge mapping functions
     - Create mapping functions in canvas store or separate utility
     - `workflowNodeToFlowNode(node, registry)` — map WorkflowNode to SvelteFlowNode with custom type detection (customNode, triggerNode, clusterNode)
     - `workflowConnectionsToEdges(connections)` — map WorkflowConnections to SvelteFlowEdge[] with proper source/target handles
@@ -318,13 +318,13 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Use fast-check to generate random workflow lists
     - **Validates: Requirements 5.1, 46.7**
 
-- [ ] 8. App shell, layout, and navigation
-  - [ ] 8.1 Implement app shell component
+- [x] 8. App shell, layout, and navigation
+  - [x] 8.1 Implement app shell component
     - Create `src/lib/components/layout/Shell.svelte`
     - Layout: ConnectionBanner (top, conditional) + Sidebar (left) + main content slot + ErrorNotification area (bottom-right toast stack)
     - _Requirements: 29, 30.3, 34.1_
 
-  - [ ] 8.2 Implement sidebar navigation
+  - [x] 8.2 Implement sidebar navigation
     - Create `src/lib/components/layout/Sidebar.svelte`
     - Navigation items from static config: Overview, Workflows, Credentials, Templates, Data Tables, Executions, Settings
     - Phase 2 items (Variables, Insights, Projects) shown with lock icon, non-clickable
@@ -333,20 +333,20 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Collapsible mode (icons only), persist collapse state in localStorage
     - _Requirements: 29.1, 29.2, 29.3, 29.4, 29.5_
 
-  - [ ] 8.3 Implement root layout with app initialization
+  - [x] 8.3 Implement root layout with app initialization
     - Update `src/routes/+layout.svelte` to render Shell component
     - On mount: call appStore.initialize() → read env → init API client → check connection → init node registry
     - If .env missing or API key empty → redirect to `/error` page
     - If connection OK → proceed to requested route
     - _Requirements: 1.1, 1.3, 1.4_
 
-  - [ ] 8.4 Implement error screen for .env issues
+  - [x] 8.4 Implement error screen for .env issues
     - Create `src/routes/error/+page.svelte`
     - Display error message with instructions to configure .env file
     - Show .env.example format reference
     - _Requirements: 1.4_
 
-  - [ ] 8.5 Implement common UI components
+  - [x] 8.5 Implement common UI components
     - Create `src/lib/components/common/SearchInput.svelte` — text input with debounced filtering (300ms)
     - Create `src/lib/components/common/TagPill.svelte` — colored tag label
     - Create `src/lib/components/common/StatusBadge.svelte` — execution status indicator (success/error/running/waiting)
@@ -357,18 +357,18 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Create `src/lib/components/common/DataTable.svelte` — reusable sortable data table component
     - _Requirements: 2.5, 34.1, 34.2, 34.5_
 
-  - [ ] 8.6 Implement top bar component for workflow editor
+  - [x] 8.6 Implement top bar component for workflow editor
     - Create `src/lib/components/layout/TopBar.svelte`
     - Editable workflow name, tags selector, Save button, Publish/Activate toggle, Share button (disabled Phase 1), History button (disabled Phase 1)
     - _Requirements: 3.2_
 
-- [ ] 9. Checkpoint — App shell renders with sidebar navigation
+- [x] 9. Checkpoint — App shell renders with sidebar navigation
   - Ensure the app launches, shows sidebar, navigates between placeholder pages
   - Ensure theme toggle works (light/dark/system)
   - Ensure .env error screen shows when credentials missing
 
-- [ ] 10. Overview page with tabs
-  - [ ] 10.1 Implement Overview page with Workflows tab
+- [x] 10. Overview page with tabs
+  - [x] 10.1 Implement Overview page with Workflows tab
     - Create `src/routes/overview/+page.svelte`
     - Three tabs: Workflows, Credentials, Executions
     - Workflows tab: list from workflowsStore with name, status (active/inactive), tags, last updated, created date
@@ -379,20 +379,20 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Cursor-based pagination via LoadMore component
     - _Requirements: 2.1, 2.2, 2.5, 2.6, 2.7, 2.8, 2.9_
 
-  - [ ] 10.2 Implement Overview Credentials tab
+  - [x] 10.2 Implement Overview Credentials tab
     - Credentials tab: list from credentialsStore with name and type
     - Search input filtering by name
     - Cursor-based pagination
     - _Requirements: 2.3, 2.9_
 
-  - [ ] 10.3 Implement Overview Executions tab
+  - [x] 10.3 Implement Overview Executions tab
     - Executions tab: list from executionsStore with workflow name (resolved from cache), started-at, status badge, execution ID
     - Search input filtering
     - Cursor-based pagination
     - _Requirements: 2.4, 2.9_
 
-- [ ] 11. Workflow canvas editor
-  - [ ] 11.1 Implement WorkflowCanvas component with Svelte Flow
+- [x] 11. Workflow canvas editor
+  - [x] 11.1 Implement WorkflowCanvas component with Svelte Flow
     - Create `src/lib/components/canvas/WorkflowCanvas.svelte`
     - Wrap `<SvelteFlow>` with nodes, edges, custom node types, custom edge type
     - Gray dotted grid background
@@ -401,7 +401,7 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Handle onNodesChange, onEdgesChange, onConnect events → update canvasStore
     - _Requirements: 3.1, 3.5, 3.8_
 
-  - [ ] 11.2 Implement CustomNode component
+  - [x] 11.2 Implement CustomNode component
     - Create `src/lib/components/canvas/CustomNode.svelte`
     - Rounded rectangle with icon + node name
     - Input port(s) on left, output port(s) on right
@@ -409,36 +409,36 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Show execution status overlay (green check / red X / spinner)
     - _Requirements: 3.6, 3.10_
 
-  - [ ] 11.3 Implement TriggerNode component
+  - [x] 11.3 Implement TriggerNode component
     - Create `src/lib/components/canvas/TriggerNode.svelte`
     - Same as CustomNode but with lightning bolt indicator
     - No input port (triggers are entry points)
     - _Requirements: 3.12_
 
-  - [ ] 11.4 Implement ClusterNode component for AI/LangChain nodes
+  - [x] 11.4 Implement ClusterNode component for AI/LangChain nodes
     - Create `src/lib/components/canvas/ClusterNode.svelte`
     - Specialized ports: ai_languageModel, ai_outputParser, ai_agent, ai_memory, ai_tool, ai_vectorStore, ai_embedding
     - Ports rendered at specific positions (bottom for sub-connections)
     - Visual grouping indicator for connected AI sub-nodes
     - _Requirements: 33.1, 33.2, 33.3, 38.2.6_
 
-  - [ ] 11.5 Implement CustomEdge component
+  - [x] 11.5 Implement CustomEdge component
     - Create `src/lib/components/canvas/CustomEdge.svelte`
     - Connection line renderer with data flow direction indication
     - Support main and AI-specific connection types with visual differentiation
     - _Requirements: 3.8, 38.2.5_
 
-  - [ ] 11.6 Implement StickyNote component
+  - [x] 11.6 Implement StickyNote component
     - Create `src/lib/components/canvas/StickyNote.svelte`
     - Text annotation on canvas, editable, resizable
     - _Requirements: 3.11_
 
-  - [ ] 11.7 Implement CanvasControls component
+  - [x] 11.7 Implement CanvasControls component
     - Create `src/lib/components/canvas/CanvasControls.svelte`
     - Buttons: zoom-to-fit, zoom-in, zoom-out, reset-zoom, tidy-up-nodes
     - _Requirements: 3.3_
 
-  - [ ] 11.8 Implement NodeSelector panel
+  - [x] 11.8 Implement NodeSelector panel
     - Create `src/lib/components/canvas/NodeSelector.svelte`
     - Slide-in panel triggered by "+" button on canvas
     - Search input with debounced filtering (300ms)
@@ -447,7 +447,7 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Click node type → add to canvas center; drag → place at drop position
     - _Requirements: 3.4_
 
-  - [ ] 11.9 Implement workflow canvas page
+  - [x] 11.9 Implement workflow canvas page
     - Create `src/routes/workflows/[id]/+page.svelte`
     - Compose: TopBar + TabBar (Editor | Executions) + WorkflowCanvas + NodeSelector + NodeConfigPanel
     - On mount: canvasStore.loadWorkflow(id) → fetch, parse, convert to Svelte Flow
@@ -457,7 +457,7 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Unsaved changes guard via SvelteKit `beforeNavigate`
     - _Requirements: 3.1, 3.2, 3.9, 3.10, 36.1, 36.2, 36.3, 36.4, 37.2, 37.4_
 
-  - [ ] 11.10 Implement new workflow page
+  - [x] 11.10 Implement new workflow page
     - Create `src/routes/workflows/new/+page.svelte`
     - Empty canvas with "Add first step" placeholder prompting Trigger_Node
     - No API call until first node added or Save clicked → POST /workflows
@@ -465,7 +465,7 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Navigate away without saving + no nodes → no API call
     - _Requirements: 3.12, 37.1_
 
-  - [ ] 11.11 Implement keyboard shortcuts
+  - [x] 11.11 Implement keyboard shortcuts
     - Register shortcuts in canvas page via `onMount` + `window.addEventListener('keydown')`
     - Ctrl/Cmd+S → save, Delete/Backspace → delete selected, Ctrl/Cmd+Z → undo, Ctrl/Cmd+Shift+Z → redo
     - Ctrl/Cmd+A → select all, Ctrl/Cmd+C → copy, Ctrl/Cmd+V → paste, Ctrl/Cmd+D → duplicate
@@ -473,7 +473,7 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Clean up on `onDestroy`
     - _Requirements: 3 (design §4.10)_
 
-  - [ ] 11.12 Implement execution polling and status updates
+  - [x] 11.12 Implement execution polling and status updates
     - After triggering workflow execution (POST), receive execution ID from response
     - Poll `GET /executions/{id}` at 1-second intervals until status is terminal (success, error, canceled)
     - During polling: update canvasStore.executionStatus per node to 'running'
@@ -483,8 +483,8 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Handle polling timeout (max 5 minutes) with user notification
     - _Requirements: 3.9, 3.10_
 
-- [ ] 12. Node configuration panel
-  - [ ] 12.1 Implement NodeConfigPanel component
+- [x] 12. Node configuration panel
+  - [x] 12.1 Implement NodeConfigPanel component
     - Create `src/lib/components/panels/NodeConfigPanel.svelte`
     - Right-side slide-in panel when node selected on canvas
     - Tabs: Parameters, Settings, Input, Output
@@ -492,7 +492,7 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Close button → deselect node
     - _Requirements: 4.1_
 
-  - [ ] 12.2 Implement ParametersTab with dynamic form rendering
+  - [x] 12.2 Implement ParametersTab with dynamic form rendering
     - Create `src/lib/components/panels/ParametersTab.svelte`
     - Iterate over NodePropertyDefinition[] from node registry
     - Render appropriate input for each property type: string→text input, number→number input, boolean→toggle, options→select, collection→expandable group, fixedCollection→named group, json→JSON textarea, code→CodeEditor
@@ -503,19 +503,19 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Inline validation for required fields
     - _Requirements: 4.2, 4.3, 4.7, 4.8_
 
-  - [ ] 12.3 Implement SettingsTab
+  - [x] 12.3 Implement SettingsTab
     - Create `src/lib/components/panels/SettingsTab.svelte`
     - Toggles: Retry on Fail, Continue on Fail, Always Output Data, Execute Once
     - _Requirements: 4.4_
 
-  - [ ] 12.4 Implement InputOutputTab
+  - [x] 12.4 Implement InputOutputTab
     - Create `src/lib/components/panels/InputOutputTab.svelte`
     - Display JSON data from most recent execution (input or output depending on tab)
     - Formatted JSON viewer with syntax highlighting
     - Show "No execution data" when no data available
     - _Requirements: 4.5, 4.6_
 
-  - [ ] 12.5 Implement ExpressionEditor component
+  - [x] 12.5 Implement ExpressionEditor component
     - Create `src/lib/components/panels/ExpressionEditor.svelte`
     - Text input with `={{ }}` syntax highlighting
     - Autocomplete dropdown: $json.*, $('NodeName').first().json.*, $vars.*, $workflow.*, $execution.*
@@ -523,7 +523,7 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Validation: highlight syntax errors in red
     - _Requirements: 4.7, 39.4_
 
-  - [ ] 12.6 Implement CodeEditor component
+  - [x] 12.6 Implement CodeEditor component
     - Create `src/lib/components/panels/CodeEditor.svelte`
     - Textarea-based editor with Prism.js syntax highlighting
     - Language toggle: JavaScript / Python
@@ -532,7 +532,7 @@ This plan implements the Local n8n App — a Tauri 2 desktop application replica
     - Monospace font, dark theme
     - _Requirements: 32.1, 32.2, 32.3_
 
-- [ ] 13. Checkpoint — Canvas editor renders workflows from API
+- [x] 13. Checkpoint — Canvas editor renders workflows from API
   - Ensure a workflow can be loaded from n8n API and rendered on canvas
   - Ensure nodes are clickable and config panel opens
   - Ensure save/activate/deactivate work

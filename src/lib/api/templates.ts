@@ -1,5 +1,3 @@
-import { apiClient } from './client';
-
 export interface Template {
 	id: number;
 	name: string;
@@ -15,7 +13,7 @@ export interface TemplateDetail extends Template {
 
 const N8N_TEMPLATES_BASE = 'https://api.n8n.io/api';
 
-/** List templates from n8n.io public API */
+/** List templates from n8n.io public API (no auth, direct fetch) */
 export async function listTemplates(
 	category?: string,
 	search?: string
@@ -27,14 +25,14 @@ export async function listTemplates(
 	const query = params.toString();
 	const path = query ? `/templates/workflows?${query}` : '/templates/workflows';
 
-	// Templates use the public n8n.io API, routed through requestInternal with full URL
-	return apiClient.requestInternal<{ workflows: Template[] }>('GET', `${N8N_TEMPLATES_BASE}${path}`);
+	const res = await fetch(`${N8N_TEMPLATES_BASE}${path}`);
+	if (!res.ok) throw new Error(`Templates API error: ${res.status}`);
+	return res.json();
 }
 
-/** Get a single template from n8n.io public API */
+/** Get a single template from n8n.io public API (no auth, direct fetch) */
 export async function getTemplate(id: number): Promise<TemplateDetail> {
-	return apiClient.requestInternal<TemplateDetail>(
-		'GET',
-		`${N8N_TEMPLATES_BASE}/templates/workflows/${id}`
-	);
+	const res = await fetch(`${N8N_TEMPLATES_BASE}/templates/workflows/${id}`);
+	if (!res.ok) throw new Error(`Templates API error: ${res.status}`);
+	return res.json();
 }
