@@ -7,6 +7,7 @@ config();
 export default defineConfig({
 	testDir: './tests/e2e',
 	outputDir: './test-results/artifacts',
+	globalSetup: './tests/e2e/global-setup.ts',
 	fullyParallel: false,
 	workers: 1, // sequential — tests share n8n state
 	retries: 0,

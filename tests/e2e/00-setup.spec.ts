@@ -36,8 +36,6 @@ test.describe('Setup', () => {
 	});
 
 	test('create LLM test workflows with credentials', async () => {
-		// Create fresh LLM test workflows via the creation script's API logic
-		// This ensures credentials are properly linked
 		const { config: loadEnv } = await import('dotenv');
 		loadEnv();
 		const BASE = process.env.N8N_BASE_URL || 'http://localhost:5678';
@@ -53,6 +51,14 @@ test.describe('Setup', () => {
 			return res.json();
 		}
 
+		// Load the complex research prompt from fixtures
+		const { readFileSync } = await import('fs');
+		const { join } = await import('path');
+		const prompts = JSON.parse(readFileSync(join(process.cwd(), 'test-data', 'fixtures', 'sample-prompts.json'), 'utf-8'));
+		const researchPrompt = prompts.prompts.find((p: any) => p.id === 'research-report');
+		const promptText = researchPrompt?.sourcePrompt || 'Write a 500-word research report on AI safety.';
+		console.log(`  Using prompt: "${researchPrompt?.graphName}" (${promptText.length} chars)`);
+
 		const creds = await api('GET', '/credentials') as any;
 		const credMap = new Map<string, { id: string; name: string }>();
 		for (const c of creds.data) credMap.set(c.type, { id: c.id, name: c.name });
@@ -61,7 +67,7 @@ test.describe('Setup', () => {
 			{ name: 'OpenAI', nodeType: '@n8n/n8n-nodes-langchain.lmChatOpenAi', credType: 'openAiApi', modelParam: { model: 'gpt-4.1', options: { maxTokens: 4096 } } },
 			{ name: 'Groq', nodeType: '@n8n/n8n-nodes-langchain.lmChatGroq', credType: 'groqApi', modelParam: { model: 'llama-3.3-70b-versatile', options: { maxTokens: 4096 } } },
 			{ name: 'Anthropic', nodeType: '@n8n/n8n-nodes-langchain.lmChatAnthropic', credType: 'anthropicApi', modelParam: { model: 'claude-opus-4-20250514', options: { maxTokens: 4096 } } },
-			{ name: 'Gemini', nodeType: '@n8n/n8n-nodes-langchain.lmChatGoogleGemini', credType: 'googlePalmApi', modelParam: { modelName: 'models/gemini-2.5-pro', options: { maxOutputTokens: 4096 } } },
+			{ name: 'Gemini', nodeType: '@n8n/n8n-nodes-langchain.lmChatGoogleGemini', credType: 'googlePalmApi', modelParam: { modelName: 'models/gemini-2.5-pro', options: { maxOutputTokens: 8192 } } },
 		];
 
 		for (const p of providers) {
@@ -73,7 +79,7 @@ test.describe('Setup', () => {
 					name: `LLM_Test_${p.name}`,
 					nodes: [
 						{ parameters: {}, id: `trigger-${p.name.toLowerCase()}`, name: 'Manual Trigger', type: 'n8n-nodes-base.manualTrigger', typeVersion: 1, position: [0, 0] },
-						{ parameters: { promptType: 'define', text: `Respond with exactly: {"status":"ok","provider":"${p.name}","message":"hello world"}`, hasOutputParser: false, options: {} }, id: `chain-${p.name.toLowerCase()}`, name: 'LLM Chain', type: '@n8n/n8n-nodes-langchain.chainLlm', typeVersion: 1.4, position: [400, 0] },
+						{ parameters: { promptType: 'define', text: promptText, hasOutputParser: false, options: {} }, id: `chain-${p.name.toLowerCase()}`, name: 'LLM Chain', type: '@n8n/n8n-nodes-langchain.chainLlm', typeVersion: 1.4, position: [400, 0] },
 						{ parameters: { ...p.modelParam }, id: `model-${p.name.toLowerCase()}`, name: `${p.name} Model`, type: p.nodeType, typeVersion: 1, position: [200, -200], credentials: { [p.credType]: { id: cred.id, name: cred.name } } },
 					],
 					connections: {
