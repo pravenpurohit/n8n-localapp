@@ -30,7 +30,7 @@
     },
     {
       "parameters": {
-        "model": "claude-sonnet-4-20250514",
+        "model": "claude-opus-4-20250514",
         "options": {
           "maxTokens": 4096
         }
@@ -78,5 +78,5 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "id": "DlQqT0m0mebZjO2q"
+  "id": "d5BGPkrRIeTObB9n"
 }
