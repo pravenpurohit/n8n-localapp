@@ -1,35 +1,34 @@
+/**
+ * Req 2: Overview/Home Page
+ * Req 29: Left Sidebar Navigation
+ */
 import { test, expect } from '@playwright/test';
-import { screenshot, gotoWithAuth, importWorkflow, cleanupTestWorkflows } from './helpers';
+import { screenshot, gotoWithAuth } from './helpers';
 
-test.describe('Overview Page', () => {
-	test.beforeAll(async () => {
-		await importWorkflow('W0_Compile_Then_Run.json');
-	});
-
-	test.afterAll(async () => {
-		await cleanupTestWorkflows();
-	});
-
-	test('shows three tabs', async ({ page }) => {
+test.describe('Req 2: Overview Page', () => {
+	test('shows overview heading', async ({ page }) => {
 		await gotoWithAuth(page, '/overview');
 		await screenshot(page, 'overview-loaded');
-		// Just verify the page loaded with the heading
 		await expect(page.getByText('Overview').first()).toBeVisible();
 	});
 
-	test('workflows tab shows imported workflow', async ({ page }) => {
+	test('has Create Workflow button (Req 2 AC#7)', async ({ page }) => {
 		await gotoWithAuth(page, '/overview');
-		// Just verify the workflow list area renders (workflows may or may not be loaded)
+		await expect(page.getByText('Create Workflow')).toBeVisible();
+	});
+
+	test('workflows tab renders workflow list (Req 2 AC#1)', async ({ page }) => {
+		await gotoWithAuth(page, '/overview');
 		await screenshot(page, 'overview-workflow-list');
 	});
 
-	test('credentials tab renders', async ({ page }) => {
+	test('credentials tab renders (Req 2 AC#3)', async ({ page }) => {
 		await gotoWithAuth(page, '/overview');
 		await page.getByRole('button', { name: 'Credentials' }).click();
 		await screenshot(page, 'overview-credentials-tab');
 	});
 
-	test('executions tab renders', async ({ page }) => {
+	test('executions tab renders (Req 2 AC#4)', async ({ page }) => {
 		await gotoWithAuth(page, '/overview');
 		await page.getByRole('button', { name: 'Executions' }).click();
 		await screenshot(page, 'overview-executions-tab');
