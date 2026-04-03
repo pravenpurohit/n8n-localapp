@@ -78,7 +78,6 @@
 					href={item.href}
 					class="flex items-center gap-3 px-3 py-2 text-sm transition-colors hover:bg-gray-200 dark:hover:bg-[#3a3a5c]"
 					class:bg-gray-200={isActive(item.href)}
-					class:dark:bg-[#3a3a5c]={isActive(item.href)}
 					class:text-[#ff6d5a]={isActive(item.href)}
 					class:font-medium={isActive(item.href)}
 				>

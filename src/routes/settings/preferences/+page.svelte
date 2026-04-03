@@ -18,7 +18,6 @@
 						class:bg-orange-50={themeStore.theme === theme}
 						class:text-[#ff6d5a]={themeStore.theme === theme}
 						class:border-gray-200={themeStore.theme !== theme}
-						class:dark:border-[#3a3a5c]={themeStore.theme !== theme}
 					>
 						{theme}
 					</button>

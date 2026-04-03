@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { SvelteFlow, Background, type NodeTypes, type EdgeTypes, type OnConnect } from '@xyflow/svelte';
+	import { SvelteFlow, Background, MiniMap, type NodeTypes, type EdgeTypes, type OnConnect } from '@xyflow/svelte';
 	import '@xyflow/svelte/dist/style.css';
 	import { canvasStore } from '$lib/stores/canvas.svelte';
 	import { nodePanelStore } from '$lib/stores/node-panel.svelte';
@@ -50,5 +50,6 @@
 		fitView
 	>
 		<Background variant="dots" gap={20} color="#ddd" />
+		<MiniMap />
 	</SvelteFlow>
 </div>

@@ -29,6 +29,22 @@
 		if (mod && e.key === 's') {
 			e.preventDefault();
 			canvasStore.saveWorkflow();
+		} else if (mod && e.key === 'z' && !e.shiftKey) {
+			e.preventDefault();
+			canvasStore.undo();
+		} else if (mod && e.key === 'z' && e.shiftKey) {
+			e.preventDefault();
+			canvasStore.redo();
+		} else if (mod && e.key === 'c') {
+			canvasStore.copySelected();
+		} else if (mod && e.key === 'v') {
+			canvasStore.paste();
+		} else if (mod && e.key === 'd') {
+			e.preventDefault();
+			canvasStore.duplicateSelected();
+		} else if (mod && e.key === 'a') {
+			e.preventDefault();
+			canvasStore.selectAll();
 		} else if (e.key === 'Delete' || e.key === 'Backspace') {
 			if (canvasStore.selectedNodeId && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
 				canvasStore.removeNode(canvasStore.selectedNodeId);

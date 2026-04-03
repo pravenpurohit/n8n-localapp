@@ -26,7 +26,72 @@ class CanvasStore {
 	private versionId = '';
 	private originalWorkflow: Workflow | null = null;
 
+	// Undo/Redo history
+	private undoStack: Array<{ nodes: SvelteFlowNode[]; edges: SvelteFlowEdge[] }> = [];
+	private redoStack: Array<{ nodes: SvelteFlowNode[]; edges: SvelteFlowEdge[] }> = [];
+	private maxHistory = 50;
+
+	// Clipboard for copy/paste
+	private clipboard: SvelteFlowNode[] = [];
+
 	selectedNode = $derived(this.nodes.find((n) => n.id === this.selectedNodeId) ?? null);
+
+	private pushHistory(): void {
+		this.undoStack.push({ nodes: structuredClone(this.nodes), edges: structuredClone(this.edges) });
+		if (this.undoStack.length > this.maxHistory) this.undoStack.shift();
+		this.redoStack = [];
+	}
+
+	undo(): void {
+		const state = this.undoStack.pop();
+		if (!state) return;
+		this.redoStack.push({ nodes: structuredClone(this.nodes), edges: structuredClone(this.edges) });
+		this.nodes = state.nodes;
+		this.edges = state.edges;
+		this.isDirty = true;
+		logger.debug('canvas', 'Undo');
+	}
+
+	redo(): void {
+		const state = this.redoStack.pop();
+		if (!state) return;
+		this.undoStack.push({ nodes: structuredClone(this.nodes), edges: structuredClone(this.edges) });
+		this.nodes = state.nodes;
+		this.edges = state.edges;
+		this.isDirty = true;
+		logger.debug('canvas', 'Redo');
+	}
+
+	copySelected(): void {
+		const selected = this.nodes.filter(n => n.selected || n.id === this.selectedNodeId);
+		if (selected.length === 0) return;
+		this.clipboard = structuredClone(selected);
+		logger.debug('canvas', `Copied ${selected.length} nodes`);
+	}
+
+	paste(): void {
+		if (this.clipboard.length === 0) return;
+		this.pushHistory();
+		const offset = 50;
+		const newNodes = this.clipboard.map(n => ({
+			...structuredClone(n),
+			id: crypto.randomUUID(),
+			position: { x: n.position.x + offset, y: n.position.y + offset },
+			selected: false,
+		}));
+		this.nodes = [...this.nodes, ...newNodes];
+		this.isDirty = true;
+		logger.debug('canvas', `Pasted ${newNodes.length} nodes`);
+	}
+
+	duplicateSelected(): void {
+		this.copySelected();
+		this.paste();
+	}
+
+	selectAll(): void {
+		this.nodes = this.nodes.map(n => ({ ...n, selected: true }));
+	}
 
 	async loadWorkflow(id: string): Promise<void> {
 		const workflow = await getWorkflow(id);
@@ -116,6 +181,7 @@ class CanvasStore {
 	}
 
 	addNode(type: string, position: { x: number; y: number }): void {
+		this.pushHistory();
 		const def = nodeRegistry.get(type);
 		const id = crypto.randomUUID();
 		const isTrigger = type.toLowerCase().includes('trigger');
@@ -139,6 +205,7 @@ class CanvasStore {
 	}
 
 	removeNode(id: string): void {
+		this.pushHistory();
 		this.nodes = this.nodes.filter((n) => n.id !== id);
 		this.edges = this.edges.filter((e) => e.source !== id && e.target !== id);
 		if (this.selectedNodeId === id) this.selectedNodeId = null;
@@ -146,6 +213,7 @@ class CanvasStore {
 	}
 
 	addEdge(source: string, target: string, sourceHandle: string, targetHandle: string): void {
+		this.pushHistory();
 		const id = `${source}-${sourceHandle}-${target}-${targetHandle}`;
 		if (this.edges.some((e) => e.id === id)) return;
 		this.edges = [

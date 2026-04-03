@@ -48,8 +48,7 @@
 		class="w-full rounded border px-2 py-1.5 font-mono text-sm"
 		class:border-red-400={hasError}
 		class:border-gray-200={!hasError}
-		class:dark:border-[#3a3a5c]={!hasError}
-		class:dark:bg-[#252547]={true}
+		class={`w-full rounded border px-2 py-1.5 font-mono text-sm dark:bg-[#252547] ${!hasError ? 'dark:border-[#3a3a5c]' : ''}`}
 		placeholder="={{ $json.field }}"
 	/>
 
