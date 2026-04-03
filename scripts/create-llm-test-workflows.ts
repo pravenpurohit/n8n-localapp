@@ -27,10 +27,10 @@ interface Provider {
 }
 
 const providers: Provider[] = [
-	{ name: 'OpenAI', nodeType: '@n8n/n8n-nodes-langchain.lmChatOpenAi', credType: 'openAiApi', modelParam: { model: 'gpt-4o-mini', options: {} } },
+	{ name: 'OpenAI', nodeType: '@n8n/n8n-nodes-langchain.lmChatOpenAi', credType: 'openAiApi', modelParam: { model: 'gpt-3.5-turbo', options: {} } },
 	{ name: 'Groq', nodeType: '@n8n/n8n-nodes-langchain.lmChatGroq', credType: 'groqApi', modelParam: { model: 'llama-3.1-8b-instant', options: {} } },
 	{ name: 'Anthropic', nodeType: '@n8n/n8n-nodes-langchain.lmChatAnthropic', credType: 'anthropicApi', modelParam: { model: 'claude-3-5-haiku-20241022', options: {} } },
-	{ name: 'Gemini', nodeType: '@n8n/n8n-nodes-langchain.lmChatGoogleGemini', credType: 'googlePalmApi', modelParam: { modelName: 'models/gemini-2.0-flash', options: {} } },
+	{ name: 'Gemini', nodeType: '@n8n/n8n-nodes-langchain.lmChatGoogleGemini', credType: 'googlePalmApi', modelParam: { modelName: 'models/gemini-2.5-flash', options: {} } },
 ];
 
 async function main() {

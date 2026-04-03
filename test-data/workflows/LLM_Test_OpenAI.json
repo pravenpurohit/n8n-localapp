@@ -30,7 +30,7 @@
     },
     {
       "parameters": {
-        "model": "gpt-4o-mini",
+        "model": "gpt-3.5-turbo",
         "options": {}
       },
       "id": "model-openai",
@@ -76,5 +76,5 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "id": "ZK2trR0n70BOYQWZ"
+  "id": "byQDRfXQLvbmoHuX"
 }

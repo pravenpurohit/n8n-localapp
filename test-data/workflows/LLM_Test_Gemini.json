@@ -30,7 +30,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-2.0-flash",
+        "modelName": "models/gemini-2.5-flash",
         "options": {}
       },
       "id": "model-gemini",
@@ -76,5 +76,5 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "id": "F3Jr4xSGDNmJeOTd"
+  "id": "OzELZ0HLzYKVEATe"
 }
