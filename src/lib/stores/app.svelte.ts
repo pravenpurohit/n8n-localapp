@@ -29,10 +29,11 @@ class AppStore {
 				};
 				this.debug = true;
 
-				// Login to n8n for session auth (needed for internal REST API like workflow execution)
+				// Browser dev mode: login to n8n for session auth (workflow execution)
+				// Credentials injected by test infrastructure via window globals, NOT from client bundle
 				try {
-					const email = (import.meta as any).env?.VITE_N8N_EMAIL || '';
-					const password = (import.meta as any).env?.VITE_N8N_PASSWORD || '';
+					const email = (typeof window !== 'undefined' && (window as any).__N8N_EMAIL__) || '';
+					const password = (typeof window !== 'undefined' && (window as any).__N8N_PASSWORD__) || '';
 					if (email && password) {
 						await fetch('/rest/login', {
 							method: 'POST',

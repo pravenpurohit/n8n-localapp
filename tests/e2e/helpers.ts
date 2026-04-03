@@ -59,7 +59,7 @@ export async function deleteWorkflow(id: string): Promise<void> {
 export async function cleanupTestWorkflows(): Promise<void> {
 	const workflows = await listWorkflows();
 	for (const w of workflows) {
-		if (/^W[0-3]_/.test(w.name)) {
+		if (/^(W[0-3]_|LLM_Test_|W_LLM_)/.test(w.name)) {
 			await deleteWorkflow(w.id);
 		}
 	}
@@ -84,11 +84,14 @@ export async function screenshot(page: import('@playwright/test').Page, name: st
  * so the browser-mode API client can authenticate.
  */
 export async function gotoWithAuth(page: import('@playwright/test').Page, path: string) {
-	await page.addInitScript((apiKey) => {
+	const email = process.env.N8N_EMAIL || '';
+	const password = process.env.N8N_PASSWORD || '';
+	await page.addInitScript(({ apiKey, email, password }) => {
 		(window as any).__N8N_API_KEY__ = apiKey;
-	}, N8N_API_KEY);
+		(window as any).__N8N_EMAIL__ = email;
+		(window as any).__N8N_PASSWORD__ = password;
+	}, { apiKey: N8N_API_KEY, email, password });
 	await page.goto(path);
-	// Use domcontentloaded — networkidle can hang if the app polls or retries connections
 	await page.waitForLoadState('domcontentloaded');
-	await page.waitForTimeout(2000); // give Svelte time to render
+	await page.waitForTimeout(2000);
 }

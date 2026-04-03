@@ -3,20 +3,14 @@ import { screenshot, gotoWithAuth } from './helpers';
 
 test.describe('App Shell', () => {
 	test('app loads and shows sidebar', async ({ page }) => {
-		// Capture console errors for debugging
 		const errors: string[] = [];
-		page.on('console', (msg) => {
-			if (msg.type() === 'error') errors.push(msg.text());
-		});
+		page.on('console', (msg) => { if (msg.type() === 'error') errors.push(msg.text()); });
 		page.on('pageerror', (err) => errors.push(err.message));
 
 		await gotoWithAuth(page, '/overview');
 		await screenshot(page, 'app-shell-loaded');
 
-		// Log any errors for debugging
-		if (errors.length > 0) {
-			console.log('Browser errors:', errors.join('\n'));
-		}
+		if (errors.length > 0) console.log('Browser errors:', errors.join('\n'));
 
 		const sidebar = page.locator('nav').first();
 		await expect(sidebar).toBeVisible();
@@ -26,6 +20,9 @@ test.describe('App Shell', () => {
 		await expect(sidebar.getByText('Executions')).toBeVisible();
 		await expect(sidebar.getByText('Templates')).toBeVisible();
 		await expect(sidebar.getByText('Settings')).toBeVisible();
+
+		// F6.1: Visual regression baseline
+		await expect(page).toHaveScreenshot('app-shell.png', { maxDiffPixelRatio: 0.03 });
 	});
 
 	test('navigates between pages', async ({ page }) => {
