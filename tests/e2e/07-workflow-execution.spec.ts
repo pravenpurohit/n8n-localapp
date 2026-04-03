@@ -42,7 +42,7 @@ async function executeViaApi(workflowId: string): Promise<string | null> {
 	return ((await res.json()) as any).data?.executionId || null;
 }
 
-async function waitForExecution(execId: string, timeoutMs = 90000) {
+async function waitForExecution(execId: string, timeoutMs = 120000) {
 	const start = Date.now();
 	while (Date.now() - start < timeoutMs) {
 		try {
@@ -79,7 +79,7 @@ test.describe('Workflow Execution with Complex Prompt', () => {
 			console.log(`  Execution: ${execId}`);
 
 			// Wait for LLM to generate the research report
-			const exec = await waitForExecution(execId!, 90000);
+			const exec = await waitForExecution(execId!, 120000);
 			console.log(`  Status: ${exec.status}`);
 
 			// Save raw output for inspection
