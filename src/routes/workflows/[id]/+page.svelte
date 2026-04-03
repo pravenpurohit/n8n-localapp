@@ -8,6 +8,7 @@
 	import NodeConfigPanel from '$lib/components/panels/NodeConfigPanel.svelte';
 	import { canvasStore } from '$lib/stores/canvas.svelte';
 	import { nodePanelStore } from '$lib/stores/node-panel.svelte';
+	import { notificationStore } from '$lib/stores/notifications.svelte';
 	import { getExecution } from '$lib/api/executions';
 	import { logger } from '$lib/core/logger';
 
@@ -83,6 +84,12 @@
 				}
 				if (['success', 'error', 'canceled'].includes(exec.status)) {
 					stopPolling();
+					if (exec.status === 'success') {
+						notificationStore.add('success', 'Execution Complete', 'Workflow executed successfully.');
+					} else if (exec.status === 'error') {
+						const errorMsg = exec.data?.resultData?.error?.message || 'Workflow execution failed. Check node outputs for details.';
+						notificationStore.addError(errorMsg);
+					}
 				}
 			} catch {
 				// continue polling

@@ -30,8 +30,10 @@
     },
     {
       "parameters": {
-        "model": "llama-3.1-8b-instant",
-        "options": {}
+        "model": "llama-3.3-70b-versatile",
+        "options": {
+          "maxTokens": 4096
+        }
       },
       "id": "model-groq",
       "name": "Groq Model",
@@ -76,5 +78,5 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "id": "q2WML7ZU0QwFTfY6"
+  "id": "vCP9AEWxQhFCO2wn"
 }

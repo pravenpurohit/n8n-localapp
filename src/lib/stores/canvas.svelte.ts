@@ -4,6 +4,7 @@ import { getWorkflow, updateWorkflow, createWorkflow } from '$lib/api/workflows'
 import { activateWorkflow, deactivateWorkflow } from '$lib/api/workflows';
 import { nodeRegistry } from '$lib/core/node-registry.svelte';
 import { logger } from '$lib/core/logger';
+import { notificationStore } from '$lib/stores/notifications.svelte';
 import {
 	workflowNodesToFlowNodes,
 	workflowConnectionsToEdges,
@@ -85,7 +86,6 @@ class CanvasStore {
 
 		try {
 			const { apiClient } = await import('$lib/api/client');
-			const { isTauri } = await import('$lib/core/platform');
 
 			// Find the trigger node
 			const triggerNode = this.nodes.find(n => {
@@ -104,9 +104,13 @@ class CanvasStore {
 					triggerToStartFrom: { name: triggerName, data: [[{ json: {} }]] },
 				}
 			);
+
+			notificationStore.add('info', 'Execution Started', `Workflow execution started (ID: ${result.data.executionId})`);
 			return result.data.executionId;
 		} catch (err) {
-			logger.error('canvas', 'Failed to execute workflow', { error: String(err) });
+			const errorMsg = err instanceof Error ? err.message : String(err);
+			logger.error('canvas', 'Failed to execute workflow', { error: errorMsg });
+			notificationStore.addError(errorMsg);
 			return null;
 		}
 	}

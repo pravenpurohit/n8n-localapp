@@ -30,8 +30,10 @@
     },
     {
       "parameters": {
-        "model": "claude-3-5-haiku-20241022",
-        "options": {}
+        "model": "claude-sonnet-4-20250514",
+        "options": {
+          "maxTokens": 4096
+        }
       },
       "id": "model-anthropic",
       "name": "Anthropic Model",
@@ -76,5 +78,5 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "id": "18Ya37Kt2wYJI7n1"
+  "id": "DlQqT0m0mebZjO2q"
 }

@@ -30,8 +30,10 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-2.5-flash",
-        "options": {}
+        "modelName": "models/gemini-2.5-pro",
+        "options": {
+          "maxOutputTokens": 4096
+        }
       },
       "id": "model-gemini",
       "name": "Gemini Model",
@@ -76,5 +78,5 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "id": "OzELZ0HLzYKVEATe"
+  "id": "Zk7cLxCETxCy7p4q"
 }

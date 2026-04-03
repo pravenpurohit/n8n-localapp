@@ -628,6 +628,9 @@ These features are available on the free Community Edition but have no public AP
 4. WHILE the n8n_Instance is unreachable, THE App SHALL allow the user to view previously cached data (workflow list, recent executions) in a read-only mode.
 5. WHEN the connection to the n8n_Instance is restored, THE App SHALL automatically refresh the current view with live data and dismiss the connection loss notification.
 6. IF an API request returns a 401 Unauthorized response, THEN THE App SHALL display an error notification instructing the user to check the .env file credentials.
+7. IF a workflow execution fails due to an LLM provider error (quota exceeded, insufficient credits, model not found, authentication failure), THEN THE App SHALL display a user-friendly notification identifying the specific issue (e.g., "API Quota Exceeded — check your billing") rather than a raw error message.
+8. IF a workflow execution fails due to an unsupported node type in the n8n instance, THEN THE App SHALL display a notification explaining the incompatibility and suggesting an n8n version update.
+9. THE App SHALL classify known API provider errors (quota, billing, model deprecation, auth, network) into user-friendly categories with actionable guidance.
 
 ---
 
