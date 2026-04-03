@@ -1,0 +1,80 @@
+{
+  "name": "LLM_Test_Groq",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-groq",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Respond with exactly this JSON and nothing else: {\"status\":\"ok\",\"provider\":\"Groq\",\"message\":\"hello world\"}",
+        "hasOutputParser": false,
+        "options": {}
+      },
+      "id": "chain-groq",
+      "name": "LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        400,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "id": "model-groq",
+      "name": "Groq Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        200,
+        -200
+      ],
+      "credentials": {
+        "groqApi": {
+          "id": "mQ2aBGrLYvWJMSPV",
+          "name": "Groq"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "TtR4kjAzZStQog5D"
+}

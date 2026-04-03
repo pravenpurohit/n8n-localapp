@@ -1,0 +1,80 @@
+{
+  "name": "LLM_Test_OpenAI",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-openai",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Respond with exactly this JSON and nothing else: {\"status\":\"ok\",\"provider\":\"OpenAI\",\"message\":\"hello world\"}",
+        "hasOutputParser": false,
+        "options": {}
+      },
+      "id": "chain-openai",
+      "name": "LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        400,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {}
+      },
+      "id": "model-openai",
+      "name": "OpenAI Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        200,
+        -200
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "JLcpaASEgfpyEXgQ",
+          "name": "OpenAI"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "ZK2trR0n70BOYQWZ"
+}
