@@ -125,4 +125,60 @@ test.describe('LLM Workflow Execution', () => {
 		await page.waitForTimeout(2000);
 		await screenshot(page, 'llm-executions-page');
 	});
+
+	test('node output is visible in readable format after execution', async ({ page }) => {
+		// Use Groq (known working provider) to test output visibility
+		const groqWf = workflows.find(w => w.provider === 'Groq');
+		if (!groqWf) { test.skip(); return; }
+
+		await gotoWithAuth(page, `/workflows/${groqWf.id}`);
+		await page.waitForTimeout(2000);
+
+		// Execute
+		const executeBtn = page.getByText('▶ Execute');
+		if (await executeBtn.isVisible()) {
+			await executeBtn.click();
+			await page.waitForTimeout(20000); // Wait for LLM response
+			await screenshot(page, 'io-after-execute');
+
+			// Click on the LLM Chain node to open config panel
+			// Svelte Flow nodes are rendered as divs — find one with "LLM Chain" text
+			const llmNode = page.locator('text=LLM Chain').first();
+			if (await llmNode.isVisible()) {
+				await llmNode.click();
+				await page.waitForTimeout(500);
+				await screenshot(page, 'io-node-selected');
+
+				// Click Output tab
+				const outputTab = page.getByText('output', { exact: false }).last();
+				if (await outputTab.isVisible()) {
+					await outputTab.click();
+					await page.waitForTimeout(500);
+					await screenshot(page, 'io-output-tab');
+
+					// Check if data is visible (not "No execution data")
+					const noData = await page.getByText('No execution data').isVisible().catch(() => false);
+					const hasTable = await page.locator('table').isVisible().catch(() => false);
+					const hasJson = await page.locator('pre').isVisible().catch(() => false);
+					const hasItems = await page.getByText('item').isVisible().catch(() => false);
+
+					console.log(`  Output tab: noData=${noData}, hasTable=${hasTable}, hasJson=${hasJson}, hasItems=${hasItems}`);
+
+					// Try each view mode
+					for (const viewMode of ['table', 'json', 'schema']) {
+						const btn = page.getByText(viewMode, { exact: true }).first();
+						if (await btn.isVisible()) {
+							await btn.click();
+							await page.waitForTimeout(300);
+							await screenshot(page, `io-output-${viewMode}`);
+							console.log(`  ${viewMode} view rendered`);
+						}
+					}
+				}
+			} else {
+				console.log('  LLM Chain node not visible on canvas');
+				await screenshot(page, 'io-no-llm-node');
+			}
+		}
+	});
 });

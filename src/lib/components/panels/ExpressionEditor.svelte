@@ -45,10 +45,7 @@
 		oninput={handleInput}
 		onfocus={() => showSuggestions = value.includes('={{')}
 		onblur={() => setTimeout(() => showSuggestions = false, 200)}
-		class="w-full rounded border px-2 py-1.5 font-mono text-sm"
-		class:border-red-400={hasError}
-		class:border-gray-200={!hasError}
-		class={`w-full rounded border px-2 py-1.5 font-mono text-sm dark:bg-[#252547] ${!hasError ? 'dark:border-[#3a3a5c]' : ''}`}
+		class="w-full rounded border px-2 py-1.5 font-mono text-sm dark:bg-[#252547] {hasError ? 'border-red-400' : 'border-gray-200 dark:border-[#3a3a5c]'}"
 		placeholder="={{ $json.field }}"
 	/>
 
