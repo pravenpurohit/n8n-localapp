@@ -2,7 +2,7 @@ import type { Node as SvelteFlowNode, Edge as SvelteFlowEdge } from '@xyflow/sve
 import type { Workflow, WorkflowNode, WorkflowSettings, Tag } from '$lib/types';
 import { getWorkflow, updateWorkflow, createWorkflow } from '$lib/api/workflows';
 import { activateWorkflow, deactivateWorkflow } from '$lib/api/workflows';
-import { nodeRegistry } from '$lib/core/node-registry';
+import { nodeRegistry } from '$lib/core/node-registry.svelte';
 import { logger } from '$lib/core/logger';
 import {
 	workflowNodesToFlowNodes,

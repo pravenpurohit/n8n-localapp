@@ -1,5 +1,5 @@
 import { listWorkflows } from '$lib/api/workflows';
-import { PaginatedList } from '$lib/utils/pagination';
+import { PaginatedList } from '$lib/utils/pagination.svelte';
 import type { Workflow } from '$lib/types';
 
 class WorkflowsStore {

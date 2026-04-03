@@ -1,20 +1,25 @@
 import { defineConfig, devices } from '@playwright/test';
+import { config } from 'dotenv';
+
+// Load .env for n8n API key
+config();
 
 export default defineConfig({
 	testDir: './tests/e2e',
 	outputDir: './test-results/artifacts',
-	fullyParallel: false, // sequential — tests share n8n state
+	fullyParallel: false,
+	workers: 1, // sequential — tests share n8n state
 	retries: 0,
 	timeout: 60_000,
 	expect: {
 		timeout: 10_000,
 		toHaveScreenshot: {
-			maxDiffPixelRatio: 0.02, // 2% diff threshold
+			maxDiffPixelRatio: 0.02,
 		},
 	},
 	use: {
-		baseURL: 'http://localhost:5173', // SvelteKit dev server
-		headless: false, // headed mode for visual debugging
+		baseURL: 'http://localhost:1420',
+		headless: false,
 		screenshot: 'on',
 		trace: 'on-first-retry',
 		video: 'retain-on-failure',
@@ -29,10 +34,9 @@ export default defineConfig({
 		['html', { outputFolder: 'test-results/visual-report', open: 'never' }],
 		['list'],
 	],
-	/* Start SvelteKit dev server before tests */
 	webServer: {
 		command: 'npm run dev',
-		url: 'http://localhost:5173',
+		url: 'http://localhost:1420',
 		reuseExistingServer: true,
 		timeout: 30_000,
 	},

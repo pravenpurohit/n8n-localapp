@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Node as SvelteFlowNode } from '@xyflow/svelte';
-	import { nodeRegistry } from '$lib/core/node-registry';
+	import { nodeRegistry } from '$lib/core/node-registry.svelte';
 	import { canvasStore } from '$lib/stores/canvas.svelte';
 	import type { NodePropertyDefinition } from '$lib/types';
 

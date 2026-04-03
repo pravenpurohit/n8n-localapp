@@ -1,7 +1,8 @@
 import { apiClient } from '$lib/api/client';
 import { connectionStore } from './connection.svelte';
-import { nodeRegistry } from '$lib/core/node-registry';
+import { nodeRegistry } from '$lib/core/node-registry.svelte';
 import { logger } from '$lib/core/logger';
+import { isTauri, tauriInvoke } from '$lib/core/platform';
 import type { AppConfig } from '$lib/types';
 
 class AppStore {
@@ -14,12 +15,22 @@ class AppStore {
 		try {
 			await apiClient.initialize();
 
-			// Read env config (apiClient.initialize already read it, but we need the full config)
-			const { invoke } = await import('@tauri-apps/api/core');
-			const envConfig = await invoke<AppConfig>('read_env_config');
-			this.config = envConfig;
-			this.debug = envConfig.debug;
-			logger.setDebug(envConfig.debug);
+			if (isTauri()) {
+				const envConfig = await tauriInvoke<AppConfig>('read_env_config');
+				this.config = envConfig;
+				this.debug = envConfig.debug;
+			} else {
+				// Browser mode: use defaults
+				this.config = {
+					n8nBaseUrl: '',
+					n8nApiKey: (typeof window !== 'undefined' && (window as any).__N8N_API_KEY__) ||
+						(import.meta as any).env?.VITE_N8N_API_KEY || '',
+					debug: true
+				};
+				this.debug = true;
+			}
+
+			logger.setDebug(this.debug);
 
 			// Check connection
 			await connectionStore.checkConnection();

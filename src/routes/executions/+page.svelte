@@ -5,7 +5,7 @@
 	import LoadMore from '$lib/components/common/LoadMore.svelte';
 	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import { executionsStore } from '$lib/stores/executions.svelte';
-	import { workflowNameCache } from '$lib/utils/cache';
+	import { workflowNameCache } from '$lib/utils/cache.svelte';
 	import { formatRelativeTime, formatDuration } from '$lib/utils/format';
 	import { deleteExecution, retryExecution } from '$lib/api/executions';
 	import type { ExecutionStatus } from '$lib/types';

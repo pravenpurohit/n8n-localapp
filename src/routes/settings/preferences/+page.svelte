@@ -15,7 +15,7 @@
 						onclick={() => themeStore.setTheme(theme as 'light' | 'dark' | 'system')}
 						class="rounded-lg border px-4 py-2 text-sm capitalize"
 						class:border-[#ff6d5a]={themeStore.theme === theme}
-						class:bg-[#ff6d5a]/10={themeStore.theme === theme}
+						class:bg-orange-50={themeStore.theme === theme}
 						class:text-[#ff6d5a]={themeStore.theme === theme}
 						class:border-gray-200={themeStore.theme !== theme}
 						class:dark:border-[#3a3a5c]={themeStore.theme !== theme}

@@ -1,11 +1,5 @@
-/**
- * E2E Test: Import and Render All Test Workflows
- * Imports every workflow variant, screenshots each on the canvas.
- * This is the comprehensive visual coverage test.
- */
-
 import { test, expect } from '@playwright/test';
-import { screenshot, importWorkflow, cleanupTestWorkflows } from './helpers';
+import { screenshot, gotoWithAuth, importWorkflow, cleanupTestWorkflows } from './helpers';
 
 const WORKFLOW_FILES = [
 	'W0_Compile_Then_Run.json',
@@ -35,34 +29,18 @@ test.describe('All Workflow Variants', () => {
 	});
 
 	test('overview shows all imported workflows', async ({ page }) => {
-		await page.goto('/overview');
-		await page.waitForLoadState('networkidle');
+		await gotoWithAuth(page, '/overview');
 		await screenshot(page, 'all-workflows-overview');
-
-		for (const w of imported) {
-			// At least the first few should be visible
-			const nameVisible = await page.getByText(w.name).isVisible().catch(() => false);
-			if (nameVisible) {
-				// good
-			}
-		}
 	});
 
 	for (const file of WORKFLOW_FILES) {
 		test(`renders ${file} on canvas`, async ({ page }) => {
 			const w = imported.find((i) => i.file === file);
-			if (!w) {
-				test.skip();
-				return;
-			}
+			if (!w) { test.skip(); return; }
 
-			await page.goto(`/workflows/${w.id}`);
-			await page.waitForLoadState('networkidle');
-			await page.waitForTimeout(2000); // Svelte Flow render time
-
+			await gotoWithAuth(page, `/workflows/${w.id}`);
+			await page.waitForTimeout(2000);
 			await screenshot(page, `canvas-${file.replace('.json', '')}`);
-
-			// Verify workflow name is shown
 			await expect(page.getByText(w.name)).toBeVisible();
 		});
 	}

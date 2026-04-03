@@ -1,5 +1,5 @@
 import { listCredentials } from '$lib/api/credentials';
-import { PaginatedList } from '$lib/utils/pagination';
+import { PaginatedList } from '$lib/utils/pagination.svelte';
 import type { Credential } from '$lib/types';
 
 class CredentialsStore {

@@ -9,7 +9,7 @@
 	import { credentialsStore } from '$lib/stores/credentials.svelte';
 	import { executionsStore } from '$lib/stores/executions.svelte';
 	import { tagsStore } from '$lib/stores/tags.svelte';
-	import { workflowNameCache } from '$lib/utils/cache';
+	import { workflowNameCache } from '$lib/utils/cache.svelte';
 	import { formatRelativeTime } from '$lib/utils/format';
 
 	let activeTab = $state<'workflows' | 'credentials' | 'executions'>('workflows');
@@ -73,7 +73,7 @@
 						}}
 						class="rounded-full border px-2 py-0.5 text-xs"
 						class:border-[#ff6d5a]={workflowsStore.selectedTags.includes(tag.id)}
-						class:bg-[#ff6d5a]/10={workflowsStore.selectedTags.includes(tag.id)}
+						class:bg-orange-50={workflowsStore.selectedTags.includes(tag.id)}
 					>
 						{tag.name}
 					</button>

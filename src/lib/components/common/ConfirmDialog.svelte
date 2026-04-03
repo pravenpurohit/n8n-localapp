@@ -23,7 +23,7 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onclick={handleCancel}>
-		<div class="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl dark:bg-[#252547]" onclick|stopPropagation>
+		<div class="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl dark:bg-[#252547]" onclick={(e) => e.stopPropagation()}>
 			<h2 class="mb-2 text-lg font-semibold">{title}</h2>
 			<p class="mb-6 text-sm text-gray-600 dark:text-gray-400">{message}</p>
 			<div class="flex justify-end gap-3">

@@ -1,6 +1,6 @@
 import { listExecutions, type ExecutionFilters } from '$lib/api/executions';
-import { PaginatedList } from '$lib/utils/pagination';
-import { workflowNameCache } from '$lib/utils/cache';
+import { PaginatedList } from '$lib/utils/pagination.svelte';
+import { workflowNameCache } from '$lib/utils/cache.svelte';
 import type { Execution, ExecutionStatus } from '$lib/types';
 
 class ExecutionsStore {

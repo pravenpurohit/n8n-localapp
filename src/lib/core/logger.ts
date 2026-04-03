@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core';
+import { isTauri, tauriInvoke } from './platform';
 
 type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
 
@@ -47,9 +47,9 @@ class Logger {
 		else if (level === 'WARN') console.warn(prefix, message, data ?? '');
 		else console.log(prefix, message, data ?? '');
 
-		// File output via Tauri (fire-and-forget)
-		if (this.debugEnabled || level === 'ERROR' || level === 'WARN') {
-			invoke('append_log', { entry: JSON.stringify(entry) }).catch(() => {});
+		// File output via Tauri (fire-and-forget, skip in browser)
+		if (isTauri() && (this.debugEnabled || level === 'ERROR' || level === 'WARN')) {
+			tauriInvoke('append_log', { entry: JSON.stringify(entry) }).catch(() => {});
 		}
 	}
 }

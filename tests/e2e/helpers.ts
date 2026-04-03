@@ -5,11 +5,14 @@
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { config } from 'dotenv';
+
+// Load .env
+config();
 
 const N8N_BASE = process.env.N8N_BASE_URL || 'http://localhost:5678';
 const N8N_API_KEY = process.env.N8N_API_KEY || '';
 
-/** Headers for n8n API calls */
 function apiHeaders(): Record<string, string> {
 	return {
 		'X-N8N-API-KEY': N8N_API_KEY,
@@ -31,28 +34,28 @@ export async function n8nApi(method: string, path: string, body?: unknown): Prom
 	return res.json();
 }
 
-/** Import a workflow JSON file into n8n, returns the created workflow */
+/** Import a workflow JSON file into n8n */
 export async function importWorkflow(filename: string): Promise<{ id: string; name: string }> {
 	const filepath = join(process.cwd(), 'test-data', 'workflows', filename);
 	const workflow = JSON.parse(readFileSync(filepath, 'utf-8'));
-	// Remove id so n8n assigns a new one
+	// Remove fields that n8n rejects on create
 	delete workflow.id;
-	const result = await n8nApi('POST', '/workflows', workflow) as { id: string; name: string };
-	return result;
+	delete workflow.meta;
+	return n8nApi('POST', '/workflows', workflow) as Promise<{ id: string; name: string }>;
 }
 
-/** List all workflows from n8n */
+/** List all workflows */
 export async function listWorkflows(): Promise<Array<{ id: string; name: string }>> {
-	const result = await n8nApi('GET', '/workflows') as { data: Array<{ id: string; name: string }> };
+	const result = (await n8nApi('GET', '/workflows')) as { data: Array<{ id: string; name: string }> };
 	return result.data;
 }
 
-/** Delete a workflow by ID */
+/** Delete a workflow */
 export async function deleteWorkflow(id: string): Promise<void> {
 	await n8nApi('DELETE', `/workflows/${id}`);
 }
 
-/** Clean up all test workflows (those starting with W0_, W1_, W2_, W3_) */
+/** Clean up test workflows */
 export async function cleanupTestWorkflows(): Promise<void> {
 	const workflows = await listWorkflows();
 	for (const w of workflows) {
@@ -62,22 +65,30 @@ export async function cleanupTestWorkflows(): Promise<void> {
 	}
 }
 
-/** Load sample prompts from fixtures */
-export function loadSamplePrompts(): Array<{
-	id: string;
-	graphName: string;
-	sourcePrompt: string;
-	expectedStrategy: string;
-}> {
+/** Load sample prompts */
+export function loadSamplePrompts() {
 	const filepath = join(process.cwd(), 'test-data', 'fixtures', 'sample-prompts.json');
-	const data = JSON.parse(readFileSync(filepath, 'utf-8'));
-	return data.prompts;
+	return JSON.parse(readFileSync(filepath, 'utf-8')).prompts;
 }
 
 /** Take a named screenshot */
-export async function screenshot(page: import('@playwright/test').Page, name: string): Promise<void> {
+export async function screenshot(page: import('@playwright/test').Page, name: string) {
 	await page.screenshot({
 		path: `test-results/screenshots/${name}_${Date.now()}.png`,
 		fullPage: true,
 	});
+}
+
+/**
+ * Navigate to a page and inject the n8n API key into the window
+ * so the browser-mode API client can authenticate.
+ */
+export async function gotoWithAuth(page: import('@playwright/test').Page, path: string) {
+	await page.addInitScript((apiKey) => {
+		(window as any).__N8N_API_KEY__ = apiKey;
+	}, N8N_API_KEY);
+	await page.goto(path);
+	// Use domcontentloaded — networkidle can hang if the app polls or retries connections
+	await page.waitForLoadState('domcontentloaded');
+	await page.waitForTimeout(2000); // give Svelte time to render
 }

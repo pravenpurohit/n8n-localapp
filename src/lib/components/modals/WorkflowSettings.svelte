@@ -17,7 +17,7 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onclick={() => open = false}>
-		<div class="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl dark:bg-[#252547]" onclick|stopPropagation>
+		<div class="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl dark:bg-[#252547]" onclick={(e) => e.stopPropagation()}>
 			<h2 class="mb-4 text-lg font-semibold">Workflow Settings</h2>
 
 			<div class="max-h-96 space-y-4 overflow-y-auto">

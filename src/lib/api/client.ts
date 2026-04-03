@@ -1,5 +1,5 @@
-import { invoke } from '@tauri-apps/api/core';
 import { logger } from '$lib/core/logger';
+import { isTauri, tauriInvoke } from '$lib/core/platform';
 import type { AppConfig, PaginatedResponse } from '$lib/types';
 
 interface HttpRequest {
@@ -25,11 +25,27 @@ export class ApiRequestError extends Error {
 	}
 }
 
-/** Send an HTTP request through Tauri's Rust backend */
-async function tauriHttp(request: HttpRequest): Promise<HttpResponse> {
+/** Send an HTTP request — via Tauri invoke or browser fetch */
+async function httpRequest(request: HttpRequest): Promise<HttpResponse> {
 	const startTime = performance.now();
 	try {
-		const response = await invoke<HttpResponse>('http_request', { request });
+		let response: HttpResponse;
+
+		if (isTauri()) {
+			response = await tauriInvoke<HttpResponse>('http_request', { request });
+		} else {
+			// Browser fallback: direct fetch
+			const res = await fetch(request.url, {
+				method: request.method,
+				headers: request.headers,
+				body: request.body ? JSON.stringify(request.body) : undefined,
+			});
+			const body = await res.text();
+			const headers: Record<string, string> = {};
+			res.headers.forEach((v, k) => (headers[k] = v));
+			response = { status: res.status, body, headers };
+		}
+
 		const duration = Math.round(performance.now() - startTime);
 		logger.debug('api', 'HTTP request completed', {
 			method: request.method,
@@ -53,13 +69,29 @@ class ApiClient {
 	private apiKey: string = '';
 
 	async initialize(): Promise<void> {
-		const config = await invoke<AppConfig>('read_env_config');
-		this.baseUrl = config.n8nBaseUrl.replace(/\/$/, '');
-		this.apiKey = config.n8nApiKey;
+		if (isTauri()) {
+			const config = await tauriInvoke<AppConfig>('read_env_config');
+			this.baseUrl = config.n8nBaseUrl.replace(/\/$/, '');
+			this.apiKey = config.n8nApiKey;
+		} else {
+			// Browser mode: use relative URLs (proxied by Vite to n8n)
+			// API key from window global (injected by tests) or import.meta.env
+			this.baseUrl = '';
+			this.apiKey =
+				(typeof window !== 'undefined' && (window as any).__N8N_API_KEY__) ||
+				(import.meta as any).env?.VITE_N8N_API_KEY ||
+				'';
+		}
+	}
+
+	/** Set credentials directly (used in browser/test mode) */
+	configure(baseUrl: string, apiKey: string): void {
+		this.baseUrl = baseUrl.replace(/\/$/, '');
+		this.apiKey = apiKey;
 	}
 
 	async request<T>(method: string, path: string, body?: unknown): Promise<T> {
-		const response = await tauriHttp({
+		const response = await httpRequest({
 			method: method as HttpRequest['method'],
 			url: `${this.baseUrl}/api/v1${path}`,
 			body,
@@ -100,9 +132,8 @@ class ApiClient {
 		return this.request<T>('DELETE', path);
 	}
 
-	/** Make a request to the internal REST API (no /api/v1 prefix) */
 	async requestInternal<T>(method: string, path: string, body?: unknown): Promise<T> {
-		const response = await tauriHttp({
+		const response = await httpRequest({
 			method: method as HttpRequest['method'],
 			url: `${this.baseUrl}${path}`,
 			body,
@@ -117,7 +148,6 @@ class ApiClient {
 		return JSON.parse(response.body) as T;
 	}
 
-	/** Fetch a paginated list with cursor-based pagination */
 	async paginate<T>(path: string, cursor?: string): Promise<PaginatedResponse<T>> {
 		const separator = path.includes('?') ? '&' : '?';
 		const url = cursor ? `${path}${separator}cursor=${cursor}` : path;

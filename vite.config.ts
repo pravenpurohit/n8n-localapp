@@ -17,6 +17,17 @@ export default defineConfig({
 	},
 	server: {
 		port: 1420,
-		strictPort: true
+		strictPort: true,
+		proxy: {
+			// Proxy n8n API requests to bypass CORS in browser dev mode
+			'/api/v1': {
+				target: 'http://localhost:5678',
+				changeOrigin: true,
+			},
+			'/rest': {
+				target: 'http://localhost:5678',
+				changeOrigin: true,
+			},
+		},
 	}
 });

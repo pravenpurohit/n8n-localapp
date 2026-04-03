@@ -1,5 +1,5 @@
 import * as dtApi from '$lib/api/data-tables';
-import { PaginatedList } from '$lib/utils/pagination';
+import { PaginatedList } from '$lib/utils/pagination.svelte';
 import type { DataTable, DataTableRow } from '$lib/api/data-tables';
 
 class DataTablesStore {

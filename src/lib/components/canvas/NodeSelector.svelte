@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { nodeRegistry } from '$lib/core/node-registry';
+	import { nodeRegistry } from '$lib/core/node-registry.svelte';
 	import { canvasStore } from '$lib/stores/canvas.svelte';
 	import SearchInput from '$lib/components/common/SearchInput.svelte';
 	import type { NodeCategory, NodeTypeDefinition } from '$lib/types';

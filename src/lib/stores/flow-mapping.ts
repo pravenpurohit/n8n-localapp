@@ -1,6 +1,6 @@
 import type { Node as SvelteFlowNode, Edge as SvelteFlowEdge } from '@xyflow/svelte';
 import type { WorkflowNode, WorkflowConnections, ConnectionTarget } from '$lib/types';
-import type { NodeTypeRegistry } from '$lib/core/node-registry';
+import type { NodeTypeRegistry } from '$lib/core/node-registry.svelte';
 
 const AI_NODE_PATTERNS = ['langchain', 'chainLlm', 'lmChat', 'lmText', 'outputParser', 'agent'];
 const TRIGGER_PATTERN = /trigger/i;
