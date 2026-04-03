@@ -82,28 +82,32 @@ class CanvasStore {
 
 	async executeWorkflow(): Promise<string | null> {
 		if (!this.workflowId) return null;
+
 		try {
-			// Try public API first
 			const { apiClient } = await import('$lib/api/client');
-			const result = await apiClient.post<{ data: { id: string } }>(
-				`/workflows/${this.workflowId}/run`,
-				{}
+			const { isTauri } = await import('$lib/core/platform');
+
+			// Find the trigger node
+			const triggerNode = this.nodes.find(n => {
+				const nodeType = (n.data?.nodeType as string) || '';
+				return nodeType.includes('manualTrigger') || nodeType.includes('webhook') || nodeType.includes('executeWorkflowTrigger');
+			});
+			const triggerName = triggerNode ? (triggerNode.data?.label as string) || 'Manual Trigger' : 'Manual Trigger';
+
+			// Use internal REST API with triggerToStartFrom (matches n8n UI behavior)
+			const wf = await apiClient.get<any>(`/workflows/${this.workflowId}`);
+			const result = await apiClient.requestInternal<{ data: { executionId: string } }>(
+				'POST',
+				`/rest/workflows/${this.workflowId}/run`,
+				{
+					workflowData: wf,
+					triggerToStartFrom: { name: triggerName, data: [[{ json: {} }]] },
+				}
 			);
-			return result.data.id;
-		} catch {
-			try {
-				// Fallback to internal REST API
-				const { apiClient } = await import('$lib/api/client');
-				const result = await apiClient.requestInternal<{ data: { id: string } }>(
-					'POST',
-					`/rest/workflows/${this.workflowId}/run`,
-					{ startNodes: [] }
-				);
-				return result.data.id;
-			} catch (err) {
-				logger.error('canvas', 'Failed to execute workflow', { error: String(err) });
-				return null;
-			}
+			return result.data.executionId;
+		} catch (err) {
+			logger.error('canvas', 'Failed to execute workflow', { error: String(err) });
+			return null;
 		}
 	}
 

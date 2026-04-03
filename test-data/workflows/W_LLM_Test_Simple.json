@@ -1,0 +1,44 @@
+{
+  "name": "W_LLM_Test_Simple",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Say exactly: hello world",
+        "hasOutputParser": false,
+        "options": {}
+      },
+      "id": "chain",
+      "name": "LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [300, 0]
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "id": "model",
+      "name": "Groq Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [150, -200]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": { "main": [[{ "node": "LLM Chain", "type": "main", "index": 0 }]] },
+    "Groq Model": { "ai_languageModel": [[{ "node": "LLM Chain", "type": "ai_languageModel", "index": 0 }]] }
+  },
+  "pinData": {},
+  "settings": { "executionOrder": "v1" },
+  "staticData": null
+}

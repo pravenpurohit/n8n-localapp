@@ -34,11 +34,12 @@ async function httpRequest(request: HttpRequest): Promise<HttpResponse> {
 		if (isTauri()) {
 			response = await tauriInvoke<HttpResponse>('http_request', { request });
 		} else {
-			// Browser fallback: direct fetch
+			// Browser fallback: direct fetch with credentials for session cookies
 			const res = await fetch(request.url, {
 				method: request.method,
 				headers: request.headers,
 				body: request.body ? JSON.stringify(request.body) : undefined,
+				credentials: 'include',
 			});
 			const body = await res.text();
 			const headers: Record<string, string> = {};

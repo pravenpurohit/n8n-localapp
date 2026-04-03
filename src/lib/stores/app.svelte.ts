@@ -28,6 +28,22 @@ class AppStore {
 					debug: true
 				};
 				this.debug = true;
+
+				// Login to n8n for session auth (needed for internal REST API like workflow execution)
+				try {
+					const email = (import.meta as any).env?.VITE_N8N_EMAIL || '';
+					const password = (import.meta as any).env?.VITE_N8N_PASSWORD || '';
+					if (email && password) {
+						await fetch('/rest/login', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({ emailOrLdapLoginId: email, password }),
+							credentials: 'include',
+						});
+					}
+				} catch {
+					// Login is optional — public API still works without it
+				}
 			}
 
 			logger.setDebug(this.debug);
